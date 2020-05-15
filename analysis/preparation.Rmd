@@ -1,0 +1,1143 @@
+---
+title: "preparation"
+author: "bernard-liew"
+date: "2020-05-14"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Introduction
+
+
+## Load library
+```{r message=FALSE, warning=FALSE}
+rm (list = ls())
+
+# helper
+library(tidyverse)
+library (arsenal)
+library (janitor)
+library(readxl)
+library(haven)
+library (furrr)
+
+# functional plots and outliers
+library (rainbow)
+library (mrfDepth)
+
+# modelling
+library (FDboost)
+
+# parallel
+library(doParallel)
+library(foreach)
+
+# helper function
+source('code/helper_func.R')
+
+```
+
+## set path
+
+```{r}
+folder = "."
+
+import_folder <- "data"
+
+export_folder <- "output"
+
+study <- c ("fukuchi", 
+            "bernard_study1", 
+            "bernard_study2_pre", 
+            "bernard_study2_post")
+```
+
+## Merge files
+
+```{r, eval = FALSE}
+registerDoParallel(cores = 6)
+
+for (n in seq_along(study)) {
+  
+  # File path
+  import_file_path <- file.path(folder, import_folder, study[n])
+  export_file_path <- file.path(folder, export_folder)
+  
+  List_of_file <- list.files(import_file_path, pattern = ".txt")
+  
+  assign (paste0("id_", study[n]), List_of_file)
+  
+  df.list  <- foreach(f = 1:length(List_of_file), .packages="tidyverse")%dopar% {
+  
+    read_tsv (file = file.path (import_file_path, List_of_file [f]), 
+                    col_names = T, 
+                    skip = 4)
+    }
+  
+  export_file_name1 <- paste0("id_", study[n], ".RDS")
+  saveRDS(List_of_file , file = file.path(export_file_path, export_file_name1))
+  
+  export_file_name2 <- paste0("data_", study[n], ".RDS")
+  saveRDS(df.list, file = file.path(export_file_path, export_file_name2))
+  
+  rm (List_of_file, df.list)
+  
+}
+```
+
+
+## Tidy data
+
+### fukuchi data
+
+#### import data
+
+```{r}
+export_file_path <- file.path(folder, export_folder)
+
+n <- 1
+
+export_file_name1 <- paste0("id_", study[n], ".RDS")
+id <- readRDS(file = file.path(export_file_path, export_file_name1))
+
+export_file_name2 <- paste0("data_", study[n], ".RDS")
+df.list <- readRDS(file = file.path(export_file_path, export_file_name2))
+
+# demographic data
+
+demo <- read_excel(file.path(export_file_path, "demo_fukuchi.xlsx")) %>%
+  mutate (FileName = sub ("static.txt", "", FileName))
+
+demo <- demo[, c(2:6)] %>%
+  mutate_if(is.character, ~tolower (.)) 
+
+names (demo) <- c("subj", "age", "ht", "wt", "sex")  
+
+```
+
+#### modify identifier
+
+```{r}
+
+id2 <- id %>%
+  tolower() %>%
+  str_remove(".txt") %>%
+  str_remove("_rot") %>%
+  str_remove("_rep") %>%
+  str_replace (pattern = "_grf", replacement = "_com_grf") 
+
+head (id2, 10)
+
+```
+
+#### modify each item in list wide to long
+
+
+```{r}
+
+plan (multisession)
+
+df2.list <- df.list %>%
+  future_map (~ wide_2_long(.)) 
+
+```
+
+
+#### Reformat data
+
+```{r message=FALSE, warning=FALSE}
+
+registerDoParallel(cores = 6)
+
+df3.list  <- foreach(f = 1:length(df2.list), .packages="tidyverse")%dopar% {
+  
+  # split identifier
+ id.df <- data.frame (id = id2[f]) %>%
+   separate(id, into = c("subj", "cond", "side", "joint", "biomech"), sep = "_")
+ 
+ # merge with demograph data
+ df.temp <- df2.list [[f]] %>%
+   add_column(!!! id.df, .before = "item") %>%
+   mutate (step = as.numeric(step)) %>%
+   mutate_if(is.character, ~tolower (.)) %>%
+   rename (cycle = item) %>%
+   inner_join(demo, by = "subj") %>%
+  mutate (value = ifelse (side == "left" & biomech %in% ("grf") 
+                          & axis == "ml", value * -1,
+                  ifelse (side == "left" & !biomech %in% ("grf") & axis == "ap",
+                                  value * -1, 
+                  ifelse (side == "left" & !biomech %in% ("grf") & axis == "vt",
+                                  value * -1, value)))) %>%
+   pivot_wider(names_from = "cycle",
+              values_from = "value") 
+ 
+ return (df.temp)
+
+}
+
+dat.group <- df3.list %>%
+  bind_rows () %>% 
+  group_by(joint, biomech, axis) 
+  
+group_name_df <- group_keys(dat.group) %>%
+    mutate(group_name = str_c(joint,"_", biomech, "_", axis))
+
+
+dat.list <- dat.group %>%
+  group_split(keep = FALSE)%>%
+  setNames(group_name_df$group_name) 
+
+
+demo.list <- list (subj = dat.list[[1]]$subj,
+                   cond = dat.list[[1]]$cond,
+                   side = dat.list[[1]]$side,
+                   step = dat.list[[1]]$step,
+                   age = dat.list[[1]]$age,
+                   ht = dat.list[[1]]$ht,
+                   wt = dat.list[[1]]$wt,
+                   sex = dat.list[[1]]$sex,
+                   cycle = c(1:101))
+
+plan (multisession)
+
+dat2.list <- dat.list %>%
+  future_map (~keep_cols(.))
+
+df4.list <- c(demo.list, dat2.list)
+
+```
+
+
+#### Exploratory plots
+
+```{r}
+
+pdf(width = 10, height = 8, file = paste0 ("output/", study[n],"_plots.pdf"))
+
+par(mfrow=c(2,2))
+for(i in which(sapply(df4.list, is.matrix))){
+  samp_dat <- df4.list[[i]] %>% t()
+  samp_fds <- fds (x = c(1:101), 
+                   y = samp_dat, 
+                   xname = "cycle", 
+                   yname = names (df4.list)[i])
+  plot.fds(samp_fds)
+  
+}
+dev.off()
+
+```
+
+#### Remove missing rows
+
+```{r}
+
+
+missing_rows <- df4.list[map_lgl(df4.list, is.matrix)] %>%
+  map(return_na_rows) %>%
+  unlist() %>%
+  unique()
+
+
+df5.list <- df4.list %>%
+  map_if (is.matrix, ~.[-missing_rows,]) %>%
+  map_if (is.vector, ~.[-missing_rows]) 
+
+
+```
+
+#### Outlier removal
+
+```{r}
+
+plan (multisession)
+
+df5.list <- df5.list %>%
+  future_map_if (is.matrix, my_outlier)
+
+missing_rows <- df5.list[map_lgl(df5.list, is.matrix)] %>%
+  map(return_na_rows) %>%
+  unlist() %>%
+  unique()
+
+
+
+df6.list <- df5.list %>%
+  map_if (is.matrix, ~.[-missing_rows,]) %>%
+  map_if (is.vector, ~.[-missing_rows]) 
+```
+
+#### Exploratory plots
+
+```{r}
+
+pdf(width = 10, height = 8, file = paste0 ("output/", study[n],"_clean_plots.pdf"))
+
+par(mfrow=c(2,2))
+for(i in which(sapply(df6.list, is.matrix))){
+  samp_dat <- df6.list[[i]] %>% t()
+  samp_fds <- fds (x = c(1:101), 
+                   y = samp_dat, 
+                   xname = "cycle", 
+                   yname = names (df6.list)[i])
+  plot.fds(samp_fds)
+  
+}
+dev.off()
+
+```
+
+#### Save to data
+
+```{r message=FALSE, warning=FALSE}
+
+export_file_name2 <- paste0("data_clean_", study[n], ".RDS")
+saveRDS(df6.list, file = file.path(export_file_path, export_file_name2))
+
+export_file_name2 <- paste0("data_", study[n], ".RData")
+save(df2.list,
+        df3.list,
+        df4.list,
+        df5.list,
+        df6.list, 
+        file = file.path(export_file_path, export_file_name2))
+
+```
+
+### bernard_study1 data
+
+#### import data
+
+```{r}
+
+
+n <- 2
+
+export_file_name1 <- paste0("id_", study[n], ".RDS")
+id <- readRDS(file = file.path(export_file_path, export_file_name1))
+
+export_file_name2 <- paste0("data_", study[n], ".RDS")
+df.list <- readRDS(file = file.path(export_file_path, export_file_name2))
+
+# demographic data
+
+demo <- read_excel(file.path(export_file_path, "demo_study1.xlsx"),
+                   sheet = "Sheet1") %>%
+  rename (subj = Subject,
+          age = Age,
+          ht = "Height(m)",
+          wt = "Mass (kg)",
+          sex = Sex) %>%
+  mutate_if(is.character, ~tolower (.)) %>%
+  mutate (subj = str_pad (subj, width = 2, side = "left", pad = "0")) %>%
+  mutate (subj = paste0("subj", subj)) %>%
+  dplyr::select (subj, age, wt, ht, sex) 
+  
+```
+
+#### modify identifier
+
+```{r}
+
+id2 <- id %>%
+  tolower() %>%
+  str_remove(".txt") %>%
+  str_remove("_rot") %>%
+  str_remove_all(" ") %>%
+  str_remove_all("dynamic|good") %>%
+  str_replace (pattern = "subject", replacement = "subj") %>%
+  str_replace (pattern = "_grf", replacement = "_com_force") %>%
+  str_replace_all (pattern ="_noemg", replacement = "") %>%
+  str_replace (pattern = "force", replacement = "grf")  %>%
+  str_replace (pattern = "\\(3,0\\)", replacement = "slowbw") %>%
+  str_replace (pattern = "\\(3,10\\)", replacement = "slowten") %>%
+  str_replace (pattern = "\\(3,20\\)", replacement = "slowtwe") %>%
+  str_replace (pattern = "\\(4,0\\)", replacement = "modbw") %>%
+  str_replace (pattern = "\\(4,10\\)", replacement = "modten") %>%
+  str_replace (pattern = "\\(4,20\\)", replacement = "modtwe") %>%
+  str_replace (pattern = "\\(5,0\\)", replacement = "fastbw") %>%
+  str_replace (pattern = "\\(5,10\\)", replacement = "fastten") %>%
+  str_replace (pattern = "\\(5,20\\)", replacement = "fasttwe") 
+
+head(id2, 15)
+
+names (df.list) <- id2
+
+```
+
+#### modify each item in list wide to long
+
+
+```{r}
+
+plan (multisession)
+
+empty_items <- map_lgl (df.list,~ncol (.) < 4)
+
+df2.list <- df.list[!empty_items] %>%
+  future_map ( ~ wide_2_longer(.)) 
+
+id2 <- names (df2.list)
+```
+
+
+#### Reformat data
+
+```{r message=FALSE, warning=FALSE}
+
+registerDoParallel(cores = 6)
+
+df3.list  <- foreach(f = 1:length(df2.list), .packages="tidyverse")%dopar% {
+
+ id.df <- data.frame (id = id2[f]) %>%
+   separate(id, into = c("subj", "cond", "side", "joint", "biomech"), sep = "_")
+ 
+ df.temp <- df2.list [[f]] %>%
+   add_column(!!! id.df, .before = "item") %>%
+   mutate (cond = str_remove(cond, "[0-9]+")) %>%
+   mutate_if(is.character, ~tolower (.)) %>%
+   rename (cycle = item) %>%
+   mutate (axis = ifelse (biomech %in% ("grf") & axis == "x", "ap",
+               ifelse (biomech %in% ("grf") & axis == "y", "ml", 
+               ifelse (biomech %in% ("grf") & axis == "z", "vt",
+               ifelse (!biomech %in% ("grf") & axis == "x", "ml",
+               ifelse (!biomech %in% ("grf") & axis == "y", "ap",
+                       "vt")))))) %>%
+   mutate (value = ifelse (side == "left" & biomech %in% ("grf") & axis == "ml", 
+                           value * -1,
+                   ifelse (biomech %in% ("grf") & axis == "ap",
+                           value * -1,
+                   ifelse (side == "left" & !biomech %in% ("grf") & axis == "ap",
+                           value * -1, 
+                   ifelse (side == "left" & !biomech %in% ("grf") & 
+                             axis == "vt",
+                           value * -1 , value))))) %>%
+   inner_join(demo, by = "subj") %>%
+   pivot_wider(names_from = "cycle",
+              values_from = "value") 
+ 
+ return (df.temp)
+
+}
+
+dat.group <- df3.list %>%
+  bind_rows () %>% 
+  group_by(joint, biomech, axis) 
+  
+group_name_df <- group_keys(dat.group) %>%
+    mutate(group_name = str_c(joint,"_", biomech, "_", axis))
+
+
+dat.list <- dat.group %>%
+  group_split(keep = FALSE)%>%
+  setNames(group_name_df$group_name) 
+
+
+demo.list <- list (subj = dat.list[[1]]$subj,
+                   cond = dat.list[[1]]$cond,
+                   side = dat.list[[1]]$side,
+                   step = dat.list[[1]]$step,
+                   age = dat.list[[1]]$age,
+                   ht = dat.list[[1]]$ht,
+                   wt = dat.list[[1]]$wt,
+                   sex = dat.list[[1]]$sex,
+                   cycle = c(1:101))
+
+plan (multisession)
+dat2.list <- dat.list %>%
+  future_map (~keep_cols(.))
+
+df4.list <- c(demo.list, dat2.list)
+df4.list <- df4.list [ifelse( is.na(names (df4.list)), FALSE, TRUE)]
+
+
+df4.list$step <- modify_step(subj = df4.list$subj,
+                             cond = df4.list$cond)
+
+```
+
+
+#### Exploratory plots
+
+```{r}
+
+pdf(width = 10, height = 8, file = paste0 ("output/", study[n],"_plots.pdf"))
+
+par(mfrow=c(2,2))
+for(i in which(sapply(df4.list, is.matrix))){
+  samp_dat <- df4.list[[i]] %>% t()
+  samp_fds <- fds (x = c(1:101), 
+                   y = samp_dat, 
+                   xname = "cycle", 
+                   yname = names (df4.list)[i])
+  plot.fds(samp_fds)
+  
+}
+dev.off()
+
+```
+
+#### Remove missing rows
+
+```{r}
+
+
+missing_rows <- df4.list[map_lgl(df4.list, is.matrix)] %>%
+  map(return_na_rows) %>%
+  unlist() %>%
+  unique()
+
+
+df5.list <- df4.list %>%
+  map_if (is.matrix, ~.[-missing_rows,]) %>%
+  map_if (is.vector, ~.[-missing_rows]) 
+
+
+```
+
+
+#### Remove missing rows
+
+```{r}
+
+
+missing_rows <- df4.list[map_lgl(df4.list, is.matrix)] %>%
+  map(return_na_rows) %>%
+  unlist() %>%
+  unique()
+
+
+df5.list <- df4.list %>%
+  map_if (is.matrix, ~.[-missing_rows,]) %>%
+  map_if (is.vector, ~.[-missing_rows]) 
+
+
+```
+
+#### Outlier removal
+
+```{r}
+
+plan (multisession)
+
+df5.list <- df5.list %>%
+  future_map_if (is.matrix, my_outlier)
+
+missing_rows <- df5.list[map_lgl(df5.list, is.matrix)] %>%
+  map(return_na_rows) %>%
+  unlist() %>%
+  unique()
+
+
+
+df6.list <- df5.list %>%
+  map_if (is.matrix, ~.[-missing_rows,]) %>%
+  map_if (is.vector, ~.[-missing_rows]) 
+```
+
+#### Exploratory plots
+
+```{r}
+
+pdf(width = 10, height = 8, file = paste0 ("output/", study[n],"_clean_plots.pdf"))
+
+par(mfrow=c(2,2))
+for(i in which(sapply(df6.list, is.matrix))){
+  samp_dat <- df6.list[[i]] %>% t()
+  samp_fds <- fds (x = c(1:101), 
+                   y = samp_dat, 
+                   xname = "cycle", 
+                   yname = names (df6.list)[i])
+  plot.fds(samp_fds)
+  
+}
+dev.off()
+
+```
+
+#### Save to data
+
+```{r message=FALSE, warning=FALSE}
+
+export_file_name2 <- paste0("data_clean_", study[n], ".RDS")
+saveRDS(df6.list, file = file.path(export_file_path, export_file_name2))
+
+export_file_name2 <- paste0("data_", study[n], ".RData")
+save(df2.list,
+        df3.list,
+        df4.list,
+        df5.list,
+        df6.list, 
+        file = file.path(export_file_path, export_file_name2))
+
+```
+
+
+
+### bernard_study2_pre data
+
+#### import data
+
+```{r}
+
+n <- 3
+
+export_file_name1 <- paste0("id_", study[n], ".RDS")
+id <- readRDS(file = file.path(export_file_path, export_file_name1))
+
+export_file_name2 <- paste0("data_", study[n], ".RDS")
+df.list <- readRDS(file = file.path(export_file_path, export_file_name2))
+
+# demographic data
+
+demo <- read_excel(file.path(export_file_path, "demo_study2.xlsx"),
+                   sheet = "Demographics") %>%
+  rename (subj = ID,
+          occ = OCC,
+          age = AGE,
+          ht = HT,
+          wt = WT,
+          sex = SEX) %>%
+  mutate_if(is.character, ~tolower (.)) %>%
+  mutate (subj = paste0("subj", subj)) %>%
+  filter (occ == "pre") %>%
+  dplyr::select (subj, age, wt, ht, sex)
+  
+
+```
+
+#### modify identifier
+
+```{r}
+
+id2 <- id %>%
+  tolower() %>%
+  str_remove(".txt") %>%
+  str_remove("_rot") %>%
+  str_replace (pattern = "_grf", replacement = "_com_force") %>%
+  str_replace (pattern = "subject_", replacement = "subj") %>%
+  str_replace_all (pattern = "_g|_noemg|_run", replacement = "") %>%
+  str_replace (pattern = "force", replacement = "grf") %>%
+  str_replace (pattern = "fix_back", replacement = "fback") %>%
+  str_replace (pattern = "fix_bw", replacement = "fbw") %>%
+  str_replace (pattern = "self_back", replacement = "sback") %>%
+  str_replace (pattern = "self_bw", replacement = "sbw") 
+
+names (df.list) <- id2
+
+```
+
+#### modify each item in list wide to long
+
+
+```{r}
+
+
+
+  
+plan (multisession)
+
+empty_items <- map_lgl (df.list,~ncol (.) < 4)
+
+df2.list <- df.list[!empty_items] %>%
+  future_map ( ~ wide_2_longer(.)) 
+
+id2 <- names (df2.list)
+
+```
+
+
+#### Reformat data
+
+```{r message=FALSE, warning=FALSE}
+
+
+registerDoParallel(cores = 6)
+
+df3.list  <- foreach(f = 1:length(df2.list), .packages="tidyverse")%dopar% {
+
+ id.df <- data.frame (id = id2[f]) %>%
+   separate(id, into = c("subj", "cond", "side", "joint", "biomech"), sep = "_")
+ 
+ df.temp <- df2.list [[f]] %>%
+   add_column(!!! id.df, .before = "item") %>%
+   mutate (cond = str_remove(cond, "[0-9]+")) %>%
+   mutate_if(is.character, ~tolower (.)) %>%
+   rename (cycle = item) %>%
+   mutate (axis = ifelse (biomech %in% ("grf") & axis == "x", "ml",
+               ifelse (biomech %in% ("grf") & axis == "y", "ap", 
+               ifelse (biomech %in% ("grf") & axis == "z", "vt",
+               ifelse (!biomech %in% ("grf") & axis == "x", "ml",
+               ifelse (!biomech %in% ("grf") & axis == "y", "ap",
+                       "vt")))))) %>%
+   mutate (value = ifelse (side == "left" & biomech %in% ("grf") & axis == "ml", 
+                           value * -1,
+                   ifelse (side == "left" & !biomech %in% ("grf") & axis == "ap",
+                           value * -1, 
+                   ifelse (side == "left" & !biomech %in% ("grf") & 
+                             axis == "vt",
+                           value * -1 , value)))) %>%
+   inner_join(demo, by = "subj") %>%
+   pivot_wider(names_from = "cycle",
+              values_from = "value") 
+ 
+ return (df.temp)
+
+}
+
+dat.group <- df3.list %>%
+  bind_rows () %>% 
+  group_by(joint, biomech, axis) 
+  
+group_name_df <- group_keys(dat.group) %>%
+    mutate(group_name = str_c(joint,"_", biomech, "_", axis))
+
+
+dat.list <- dat.group %>%
+  group_split(keep = FALSE)%>%
+  setNames(group_name_df$group_name) 
+
+
+demo.list <- list (subj = dat.list[[1]]$subj,
+                   cond = dat.list[[1]]$cond,
+                   side = dat.list[[1]]$side,
+                   step = dat.list[[1]]$step,
+                   age = dat.list[[1]]$age,
+                   ht = dat.list[[1]]$ht,
+                   wt = dat.list[[1]]$wt,
+                   sex = dat.list[[1]]$sex,
+                   cycle = c(1:101))
+
+plan (multisession)
+dat2.list <- dat.list %>%
+  future_map (~keep_cols(.))
+
+df4.list <- c(demo.list, dat2.list)
+df4.list <- df4.list [ifelse( is.na(names (df4.list)), FALSE, TRUE)]
+
+
+df4.list$step <- modify_step(subj = df4.list$subj,
+                             cond = df4.list$cond)
+
+```
+
+#### Exploratory plots
+
+```{r}
+
+pdf(width = 10, height = 8, file = paste0 ("output/", study[n],"_plots.pdf"))
+
+par(mfrow=c(2,2))
+for(i in which(sapply(df4.list, is.matrix))){
+  samp_dat <- df4.list[[i]] %>% t()
+  samp_fds <- fds (x = c(1:101), 
+                   y = samp_dat, 
+                   xname = "cycle", 
+                   yname = names (df4.list)[i])
+  plot.fds(samp_fds)
+  
+}
+dev.off()
+
+```
+
+#### Remove missing rows
+
+```{r}
+
+
+missing_rows <- df4.list[map_lgl(df4.list, is.matrix)] %>%
+  map(return_na_rows) %>%
+  unlist() %>%
+  unique()
+
+
+df5.list <- df4.list %>%
+  map_if (is.matrix, ~.[-missing_rows,]) %>%
+  map_if (is.vector, ~.[-missing_rows]) 
+
+
+```
+
+
+
+#### Outlier removal
+
+```{r}
+
+plan (multisession)
+
+df5.list <- df5.list %>%
+  future_map_if (is.matrix, my_outlier)
+
+missing_rows <- df5.list[map_lgl(df5.list, is.matrix)] %>%
+  map(return_na_rows) %>%
+  unlist() %>%
+  unique()
+
+
+
+df6.list <- df5.list %>%
+  map_if (is.matrix, ~.[-missing_rows,]) %>%
+  map_if (is.vector, ~.[-missing_rows]) 
+```
+
+#### Exploratory plots
+
+```{r}
+
+pdf(width = 10, height = 8, file = paste0 ("output/", study[n],"_clean_plots.pdf"))
+
+par(mfrow=c(2,2))
+for(i in which(sapply(df6.list, is.matrix))){
+  samp_dat <- df6.list[[i]] %>% t()
+  samp_fds <- fds (x = c(1:101), 
+                   y = samp_dat, 
+                   xname = "cycle", 
+                   yname = names (df6.list)[i])
+  plot.fds(samp_fds)
+  
+}
+dev.off()
+
+```
+
+#### Save to data
+
+```{r message=FALSE, warning=FALSE}
+
+export_file_name2 <- paste0("data_clean_", study[n], ".RDS")
+saveRDS(df6.list, file = file.path(export_file_path, export_file_name2))
+
+export_file_name2 <- paste0("data_", study[n], ".RData")
+save(df2.list,
+        df3.list,
+        df4.list,
+        df5.list,
+        df6.list, 
+        file = file.path(export_file_path, export_file_name2))
+
+```
+
+### bernard_study2_post data
+
+#### import data
+
+```{r}
+
+folder = "./.."
+
+export_folder <- "data"
+
+n <- 4
+
+export_file_name1 <- paste0("id_", study[n], ".RDS")
+id <- readRDS(file = file.path(export_file_path, export_file_name1))
+
+export_file_name2 <- paste0("data_", study[n], ".RDS")
+df.list <- readRDS(file = file.path(export_file_path, export_file_name2))
+
+# demographic data
+
+demo <- read_excel(file.path(export_file_path, "demo_study2.xlsx"),
+                   sheet = "Demographics") %>%
+  rename (subj = ID,
+          occ = OCC,
+          age = AGE,
+          ht = HT,
+          wt = WT,
+          sex = SEX) %>%
+  mutate_if(is.character, ~tolower (.)) %>%
+  mutate (subj = paste0("subj", subj)) %>%
+  filter (occ == "post") %>%
+  dplyr::select (subj, age, wt, ht, sex)
+  
+
+```
+
+#### modify identifier
+
+```{r}
+
+id2 <- id %>%
+  tolower() %>%
+  str_remove(".txt") %>%
+  str_remove("_rot") %>%
+  str_replace (pattern = "_grf", replacement = "_com_force") %>%
+  str_replace (pattern = "subject_", replacement = "subj") %>%
+  str_replace_all (pattern = "_g|_noemg|_run", replacement = "") %>%
+  str_replace (pattern = "force", replacement = "grf") %>%
+  str_replace (pattern = "fix_back", replacement = "fback") %>%
+  str_replace (pattern = "fix_bw", replacement = "fbw") %>%
+  str_replace (pattern = "self_back", replacement = "sback") %>%
+  str_replace (pattern = "self_bw", replacement = "sbw") 
+
+names (df.list) <- id2
+
+```
+
+#### modify each item in list wide to long
+
+
+```{r}
+
+
+plan (multisession)
+
+empty_items <- map_lgl (df.list,~ncol (.) < 4)
+
+df2.list <- df.list[!empty_items] %>%
+  future_map ( ~ wide_2_longer(.)) 
+
+id2 <- names (df2.list)
+
+
+```
+
+
+#### Reformat data
+
+```{r message=FALSE, warning=FALSE}
+
+registerDoParallel(cores = 4)
+
+df3.list  <- foreach(f = 1:length(df2.list), .packages="tidyverse")%dopar% {
+
+ id.df <- data.frame (id = id2[f]) %>%
+   separate(id, into = c("subj", "cond", "side", "joint", "biomech"), sep = "_")
+ 
+ df.temp <- df2.list [[f]] %>%
+   add_column(!!! id.df, .before = "item") %>%
+   mutate (cond = str_remove(cond, "[0-9]+")) %>%
+   mutate_if(is.character, ~tolower (.)) %>%
+   rename (cycle = item) %>%
+   mutate (axis = ifelse (biomech %in% ("grf") & axis == "x", "ml",
+               ifelse (biomech %in% ("grf") & axis == "y", "ap", 
+               ifelse (biomech %in% ("grf") & axis == "z", "vt",
+               ifelse (!biomech %in% ("grf") & axis == "x", "ml",
+               ifelse (!biomech %in% ("grf") & axis == "y", "ap",
+                       "vt")))))) %>%
+   mutate (value = ifelse (side == "left" & biomech %in% ("grf") & axis == "ml", 
+                           value * -1,
+                   ifelse (side == "left" & !biomech %in% ("grf") & axis == "ap",
+                           value * -1, 
+                   ifelse (side == "left" & !biomech %in% ("grf") & 
+                             axis == "vt",
+                           value * -1 , value)))) %>%
+   inner_join(demo, by = "subj") %>%
+   pivot_wider(names_from = "cycle",
+              values_from = "value") 
+ 
+ return (df.temp)
+
+}
+
+dat.group <- df3.list %>%
+  bind_rows () %>% 
+  group_by(joint, biomech, axis) 
+  
+group_name_df <- group_keys(dat.group) %>%
+    mutate(group_name = str_c(joint,"_", biomech, "_", axis))
+
+
+dat.list <- dat.group %>%
+  group_split(keep = FALSE)%>%
+  setNames(group_name_df$group_name) 
+
+
+demo.list <- list (subj = dat.list[[1]]$subj,
+                   cond = dat.list[[1]]$cond,
+                   side = dat.list[[1]]$side,
+                   step = dat.list[[1]]$step,
+                   age = dat.list[[1]]$age,
+                   ht = dat.list[[1]]$ht,
+                   wt = dat.list[[1]]$wt,
+                   sex = dat.list[[1]]$sex,
+                   cycle = c(1:101))
+
+plan (multisession)
+dat2.list <- dat.list %>%
+  future_map (~keep_cols(.))
+
+df4.list <- c(demo.list, dat2.list)
+df4.list <- df4.list [ifelse( is.na(names (df4.list)), FALSE, TRUE)]
+
+df4.list$step <- modify_step(subj = df4.list$subj,
+                             cond = df4.list$cond)
+
+```
+
+
+#### Exploratory plots
+
+```{r}
+
+pdf(width = 10, height = 8, file = paste0 ("output/", study[n],"_plots.pdf"))
+
+par(mfrow=c(2,2))
+for(i in which(sapply(df4.list, is.matrix))){
+  samp_dat <- df4.list[[i]] %>% t()
+  samp_fds <- fds (x = c(1:101), 
+                   y = samp_dat, 
+                   xname = "cycle", 
+                   yname = names (df4.list)[i])
+  plot.fds(samp_fds)
+  
+}
+dev.off()
+
+```
+
+#### Remove missing rows
+
+```{r}
+
+
+missing_rows <- df4.list[map_lgl(df4.list, is.matrix)] %>%
+  map(return_na_rows) %>%
+  unlist() %>%
+  unique()
+
+
+df5.list <- df4.list %>%
+  map_if (is.matrix, ~.[-missing_rows,]) %>%
+  map_if (is.vector, ~.[-missing_rows]) 
+
+
+```
+
+
+
+#### Outlier removal
+
+```{r}
+
+plan (multisession)
+
+df5.list <- df5.list %>%
+  future_map_if (is.matrix, my_outlier)
+
+missing_rows <- df5.list[map_lgl(df5.list, is.matrix)] %>%
+  map(return_na_rows) %>%
+  unlist() %>%
+  unique()
+
+
+
+df6.list <- df5.list %>%
+  map_if (is.matrix, ~.[-missing_rows,]) %>%
+  map_if (is.vector, ~.[-missing_rows]) 
+```
+
+#### Exploratory plots
+
+```{r}
+
+pdf(width = 10, height = 8, file = paste0 ("output/", study[n],"_clean_plots.pdf"))
+
+par(mfrow=c(2,2))
+for(i in which(sapply(df6.list, is.matrix))){
+  samp_dat <- df6.list[[i]] %>% t()
+  samp_fds <- fds (x = c(1:101), 
+                   y = samp_dat, 
+                   xname = "cycle", 
+                   yname = names (df6.list)[i])
+  plot.fds(samp_fds)
+  
+}
+dev.off()
+
+```
+
+#### Save to data
+
+```{r message=FALSE, warning=FALSE}
+
+export_file_name2 <- paste0("data_clean_", study[n], ".RDS")
+saveRDS(df6.list, file = file.path(export_file_path, export_file_name2))
+
+export_file_name2 <- paste0("data_", study[n], ".RData")
+save(df2.list,
+        df3.list,
+        df4.list,
+        df5.list,
+        df6.list, 
+        file = file.path(export_file_path, export_file_name2))
+
+```
+
+## Merge four tidied dataframes
+
+### import data
+
+```{r}
+folder = "."
+
+export_folder <- "output"
+
+export_file_path <- file.path(folder, export_folder)
+
+registerDoParallel(cores = 4)
+
+df.comb.list  <- foreach(f = 1:length(study), .packages="tidyverse")%dopar% {
+  
+  export_file_name2 <- paste0("data_clean_", study[f], ".RDS")
+  readRDS(file = file.path(export_file_path, export_file_name2))
+  
+}
+
+```
+
+### modify each subject identifier to reflect study
+
+```{r}
+
+for (n in seq_along(study)) {
+  
+  df.comb.list[[n]]$subj <- paste0(study[n], "_",  df.comb.list[[n]]$subj)
+  
+}
+
+```
+
+```{r}
+
+mat_df <- Map (rbind, 
+               df.comb.list[[1]] [map_lgl(df.comb.list[[1]], is.matrix)], 
+               df.comb.list[[2]] [map_lgl(df.comb.list[[2]], is.matrix)], 
+               df.comb.list[[3]] [map_lgl(df.comb.list[[3]], is.matrix)], 
+               df.comb.list[[4]] [map_lgl(df.comb.list[[4]], is.matrix)])
+
+demo_df <- Map (c, 
+               df.comb.list[[1]] [!map_lgl(df.comb.list[[1]], is.matrix)], 
+               df.comb.list[[2]] [!map_lgl(df.comb.list[[2]], is.matrix)], 
+               df.comb.list[[3]] [!map_lgl(df.comb.list[[3]], is.matrix)], 
+               df.comb.list[[4]] [!map_lgl(df.comb.list[[4]], is.matrix)])
+
+
+df_final <- c(demo_df, mat_df)
+
+df_final$cycle <- c(1:101) # redefine cycle, as missing rows function removed
+
+norm_mass <- demo_df$wt %*% t(rep(1, n)) 
+
+
+df_final[grepl ("moment|grf", names (df_final))] <- 
+  df_final[grepl ("moment|grf", names (df_final))] %>%
+  map (~./norm_mass)
+
+df_final$ht <- ifelse (df_final$ht > 3, df_final$ht/100, df_final$ht)
+
+```
+
+
+#### Save to data
+
+```{r message=FALSE, warning=FALSE}
+
+export_file_name2 <- paste0("data_4sets", ".RDS")
+saveRDS(df_final, file = file.path(export_file_path, export_file_name2))
+
+```
+

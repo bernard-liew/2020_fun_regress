@@ -1,0 +1,93 @@
+---
+title: "visualization"
+author: "bernard-liew"
+date: "2020-05-14"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+
+# Load libraries
+
+```{r message=FALSE, warning=FALSE}
+# helper
+library(tidyverse)
+library (arsenal)
+library (janitor)
+library(readxl)
+library(haven)
+library(tidyfun)
+library (Matrix.utils)
+
+# functional plots and outliers
+library (rainbow)
+library (mrfDepth)
+
+# modelling
+library (FDboost)
+
+# parallel
+library(doParallel)
+library(foreach)
+
+```
+
+# Load data
+
+```{r}
+rm (list = ls())
+df <- readRDS("output/data_4sets.RDS")
+df$study <- as.factor(gsub("(.*)_(.*)","\\1",df$subj))
+```
+
+# Plot all data
+
+```{r}
+pdf(width = 10, height = 8, file = paste0 ("output/","allstudy_ind_plots.pdf"))
+
+par(mfrow=c(2,2))
+
+for(i in which(sapply(df, is.matrix))){
+  samp_dat <- df[[i]] %>% t()
+  samp_fds <- fds (x = c(1:101), 
+                   y = samp_dat, 
+                   xname = "cycle", 
+                   yname = names (df)[i])
+  plot.fds(samp_fds)
+  
+}
+dev.off()
+```
+
+
+# Plot average data per study 
+
+```{r}
+by_group <- interaction (factor (df$study), factor (df$side))
+
+mat_ave <- function (x, grouping, fun = "mean") {
+  
+  as.matrix (aggregate.Matrix (x, groupings = grouping, fun = fun))
+  
+}
+
+df.ave <- df[map_lgl (df, is.matrix)] %>%
+  map (~ mat_ave (., grouping = by_group, fun = "mean")) %>%
+  map ( ~ t(.) %>% as.data.frame) %>%
+  bind_rows(.id = "biomech") %>%
+  mutate (cycle = rep (c(1:101), times = nrow (.)/100)) %>%
+  pivot_longer(bernard_study1.left:fukuchi.right, names_to = "study_side", values_to = "val")
+
+
+f <- ggplot (df.ave) +
+  geom_line (aes (x = cycle, y = val, colour = study_side)) +
+  facet_wrap(~biomech, ncol = 5, scales = "free")
+
+
+
+pdf(width = 15, height = 10, file = paste0 ("output/", "mean_plots.pdf"))
+f
+dev.off()
+```
+
