@@ -67,7 +67,7 @@ df.scale <- df_mean %>%
 df.scale_test <- df_mean %>%
   map_if (grepl("ankle|knee|hip", names (df_mean)) & !grepl("grf|moment", names (df_mean)),
           ~ scale(.[ind_test,], center = TRUE, scale = FALSE)) %>%
-  map_if (grepl("grf|moment", names (df_mean)), ~ as.matrix(.[ind_test])) %>%
+  map_if (grepl("grf|moment", names (df_mean)), ~ as.matrix(.[ind_test,])) %>%
   map_if (~is.null(dim(.)) & length(.) != 101, ~ .[ind_test])
 
 rm(df)
@@ -88,5 +88,5 @@ scales <- list (train_cen = train_cen,
                 test_cen = test_cen)
 
 saveRDS(df.scale, file="output/train_data.RDS")
-saveRDS(df.scale, file="output/test_data.RDS")
+saveRDS(df.scale_test, file="output/test_data.RDS")
 saveRDS(scales, file="output/scales.RDS")
