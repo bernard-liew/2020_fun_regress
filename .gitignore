@@ -10,5 +10,4 @@ analysis/*png
 analysis/*html
 analysis/*_cache
 analysis/site_libs
-output/*txt
-output/*pdf
+output/
