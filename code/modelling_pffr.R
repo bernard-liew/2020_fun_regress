@@ -10,6 +10,11 @@ library (refund)
 # parallel
 library (doParallel)
 library (foreach)
+
+# plotting
+library (cowplot)
+library (ggpubr)
+
 # measures
 source("code/measures_johnson.R")
 
@@ -84,13 +89,20 @@ names (err_list) <- response_vars
 
 # Plot predicted vs observed ------------------------------------------
 
-results_plot <- function (test, pred, response) {
+ynames <- c("AP GRF (N/kg)",
+            "ML GRF (N/kg)",
+            "Vert GRF (N/kg)",
+            "Frontal knee moment (Nm/kg)",
+            "Sagittal knee moment (Nm/kg)",
+            "Axial knee moment (Nm/kg))")
 
-  pred_m <- apply (pred[[response]], 2, mean)
-  pred_s <- apply (pred[[response]], 2, sd)
+results_plot <- function (test, pred, response, ynames) {
 
-  obs_m <- apply (test[[response]], 2, mean)
-  obs_s <- apply (test[[response]], 2, sd)
+  pred_m <- apply (pred, 2, mean)
+  pred_s <- apply (pred, 2, sd)
+
+  obs_m <- apply (test, 2, mean)
+  obs_s <- apply (test, 2, sd)
 
   df_plot <- data.frame (var = rep (c("pred", "obs"), each = 101),
                          cycle = rep (c(1:101), times = 2),
@@ -98,13 +110,58 @@ results_plot <- function (test, pred, response) {
                          Sd = c(pred_s, obs_s))
 
   ggplot (df_plot) +
-    geom_line(aes(x = cycle, y = Mean, colour = var)) +
-    #geom_ribbon(aes(x = cycle, ymin = Mean - Sd, ymax = Mean + Sd, fill = var), alpha = 0.4) +
-    ylab (response)
+    geom_line(aes(x = cycle, y = Mean, colour = var), size = 2) +
+    geom_ribbon(aes(x = cycle, ymin = Mean - Sd, ymax = Mean + Sd, fill = var), alpha = 0.4) +
+    scale_color_manual(values = c("black", "red")) +
+    scale_fill_manual(values = c("black", "red")) +
+    guides(fill = "none") +
+    ylab (ynames) +
+    xlab ("Cycle (100%)") +
+    theme_bw() +
+    theme (text = element_text(size=16))
+
 
 
 }
 
-resp <- "knee_moment_ml"
+f_list <- list()
 
-results_plot(test = test, pred = pred_list, response = resp)
+for(n in seq_along (response_vars)){
+
+  resp <- response_vars[n]
+
+  f_list[[n]] <- results_plot(test = test[[resp]], pred = pred_list[[resp]], response = resp, ynames = ynames[n])
+
+}
+
+
+err <- err_list %>%
+  map (~ map (., mean)) %>%
+  map (bind_cols) %>%
+  bind_rows(.id = "Outcomes") %>%
+  mutate_if(is.numeric, round, 2)
+
+err$Outcomes <- ynames
+
+table_f <- ggtexttable(err, theme = ttheme("mOrange"))
+
+
+legend <- get_legend(
+  # create some space to the left of the legend
+  f_list[[1]] +
+    guides(color = guide_legend(title="Predicted vs. \nObserved"), nrow = 1) +
+    theme(legend.position = "right")
+)
+
+f <- plot_grid(plotlist = f_list %>% map (~. + theme(legend.position="none")), ncol = 3)
+
+f1 <- plot_grid(table_f,
+                legend,
+                ncol = 1,
+                rel_widths = c(0.5, .5))
+
+f2 <- plot_grid(f,
+                f1,
+                nrow = 1,
+                rel_widths = c(0.7, .3))
+f2
