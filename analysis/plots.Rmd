@@ -1,0 +1,96 @@
+---
+title: "plots"
+author: "bernard-liew"
+date: "2021-03-08"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# Load library
+```{r message=FALSE, warning=FALSE}
+rm (list = ls())
+
+# helper
+library(tidyverse)
+library (arsenal)
+library (janitor)
+library (furrr)
+
+# functional plots and outliers
+library (rainbow)
+library (mrfDepth)
+library (cowplot)
+
+# parallel
+library(doParallel)
+library(foreach)
+
+```
+
+# Import data
+
+```{r}
+train <- readRDS("output/train_data.RDS")
+test <- readRDS("output/test_data.RDS")
+
+train <- train %>%
+  map_if (is.factor, as.character)
+
+test <- test %>%
+  map_if (is.factor, as.character)
+
+df <- train
+
+for (n in seq_along (names (train))) {
+  
+  if (length (df[[n]]) == 490) {
+    
+    df[[n]] <- c(df[[n]], test[[n]])
+    
+  } else {
+    df[[n]] <- rbind(df[[n]], test[[n]])
+    
+  }
+  
+}
+```
+
+
+# Custom plot
+```{r}
+
+custom_matplot <- function (dat, var) {
+  
+  df.plot <- data.frame (id = dat$id,
+                       df[[var]]) %>%
+  pivot_longer(cols = starts_with("X"),
+               names_prefix = "X",
+               names_to = "cycle",
+               values_to = "val") %>%
+  mutate (cycle = as.numeric(cycle)) %>%
+  mutate (grp = rep (1:610, each = 101)) %>%
+  mutate (grp = factor (grp))
+
+df.plot %>%
+  ggplot () +
+  geom_line (aes (x = cycle, y = val, group = as.factor (grp)), colour = "black") + 
+  ylab (var) + 
+  xlab ("%Stride cycle") +
+  theme(legend.position = "none") + 
+  theme_cowplot() 
+
+  
+}
+
+custom_matplot (dat = df,
+                var = "ankle_angle_ml")
+
+
+
+
+```
+
+
+
+

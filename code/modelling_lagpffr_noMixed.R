@@ -20,8 +20,8 @@ source("code/measures_johnson.R")
 
 # Split data---------------------------------------------------------------
 
-train <- readRDS("output/train_data.RDS")
-test <- readRDS("output/test_data.RDS")
+train <- readRDS("output/train_lagdata.RDS")
+test <- readRDS("output/test_lagdata.RDS")
 
 # Get variables---------------------------------------------------------------
 
@@ -44,15 +44,14 @@ for (n in seq_along(response_vars)) {
     " + age",
     " + ht",
     " + wt",
-    " + sex",
-    "+ s(cond, bs = 're')",
-    "+ s(id, bs = 're')"
-    )
+    " + sex"
+  )
 
   # initialize the model
   m <- pffr(as.formula(form),
             yind = cycle,
             algorithm = "bam",
+            #discrete = TRUE,
             data = train)
 
 
@@ -60,22 +59,22 @@ for (n in seq_along(response_vars)) {
 
   # Save model and predictions
 
-  saveRDS(m, file = file.path ("output", paste0("Model_",response,".RDS")))
+  saveRDS(m, file = file.path ("output", paste0("ModelnoRElag_",response,".RDS")))
 
   pp <- predict(m, newdata = test[-which(names(test)=="cycle")])
 
-  saveRDS(pp, file = file.path ("output", paste0("Prediction_",response,".RDS")))
+  saveRDS(pp, file = file.path ("output", paste0("PredictionnoRElag_",response,".RDS")))
 
   measures <- all_measures(test[[response]], pp)
 
-  saveRDS(measures, file = file.path ("output", paste0("Measures_",response,".RDS")))
+  saveRDS(measures, file = file.path ("output", paste0("MeasuresnoRElag_",response,".RDS")))
 
   rm(m)
   gc()
 
 }
 
-# Load models-------------------------------------------------------
+#Load models-------------------------------------------------------
 
 mod_list <- list()
 pred_list <- list()
@@ -84,8 +83,8 @@ err_list <- list()
 for(n in seq_along (response_vars)){
 
   #mod_list[[n]] <- readRDS(file.path ("output", paste0("Model_",response_vars[n],".RDS")))
-  pred_list[[n]] <- readRDS(file.path ("output", paste0("Prediction_",response_vars[n],".RDS")))
-  err_list[[n]] <- readRDS(file.path ("output", paste0("Measures_",response_vars[n],".RDS")))
+  pred_list[[n]] <- readRDS(file.path ("output", paste0("PredictionnoRElag_",response_vars[n],".RDS")))
+  err_list[[n]] <- readRDS(file.path ("output", paste0("MeasuresnoRElag_",response_vars[n],".RDS")))
 
 }
 
@@ -179,6 +178,6 @@ f2 <- plot_grid(f,
                 rel_widths = c(0.7, .3))
 f2
 
-pdf ("output/predict.pdf", width = 20, height = 10)
+pdf ("output/predict_noRElag.pdf", width = 20, height = 10)
 f2
 dev.off ()
