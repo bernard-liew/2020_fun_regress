@@ -11,7 +11,7 @@ test <- readRDS("output/test_data.RDS")
 
 # Get variables---------------------------------------------------------------
 
-response_vars <- names(train)[grep("grf|knee_moment", names(train))]
+response_vars <- names(train)[grep("grf|knee_moment|hip_moment|ankle_moment", names(train))]
 pred_vars <- names(train)[grep("angle|vel|accl", names(train))]
 
 # Create arrays --------------------------------------------------------------
@@ -20,7 +20,7 @@ pred_vars <- names(train)[grep("angle|vel|accl", names(train))]
 
 train_mat <- train[map_lgl (train, is.matrix)]
 train_x <- train_mat[grepl ("accl|vel|angle", names (train_mat))]
-train_y <- train_mat[grepl ("grf|knee_moment", names (train_mat))]
+train_y <- train_mat[grepl ("grf|knee_moment|hip_moment|ankle_moment", names (train_mat))]
 axes <- c("ap", "ml", "vt")
 prednames <-unique (str_remove_all(pred_vars, "_ap|_ml|_vt"))
 outnames <-unique (str_remove_all(response_vars, "_ap|_ml|_vt"))
@@ -47,8 +47,8 @@ for (n in seq_along (axes)) {
 
 ### Restructure outcomes
 
-temp_array <- array (dim = c(nrow (train_y[[1]]), ncol (train_y[[1]]), 2))
-train_y_array <- array (dim = c(nrow (train_y[[1]]), ncol (train_y[[1]]), 2, 3))
+temp_array <- array (dim = c(nrow (train_y[[1]]), ncol (train_y[[1]]), 4))
+train_y_array <- array (dim = c(nrow (train_y[[1]]), ncol (train_y[[1]]), 4, 3))
 
 for (n in seq_along (axes)) {
 
@@ -68,7 +68,7 @@ for (n in seq_along (axes)) {
 
 test_mat <- test[map_lgl (test, is.matrix)]
 test_x <- test_mat[grepl ("accl|vel|angle", names (test_mat))]
-test_y <- test_mat[grepl ("grf|knee_moment", names (test_mat))]
+test_y <- test_mat[grepl ("grf|knee_moment|hip_moment|ankle_moment", names (test_mat))]
 
 ### Restructure predictors
 
@@ -93,8 +93,8 @@ for (n in seq_along (axes)) {
 
 ### Restructure outcomes
 
-temp_array <- array (dim = c(nrow (test_y[[1]]), ncol (test_y[[1]]), 2))
-test_y_array <- array (dim = c(nrow (test_y[[1]]), ncol (test_y[[1]]), 2, 3))
+temp_array <- array (dim = c(nrow (test_y[[1]]), ncol (test_y[[1]]), 4))
+test_y_array <- array (dim = c(nrow (test_y[[1]]), ncol (test_y[[1]]), 4, 3))
 
 for (n in seq_along (axes)) {
 
