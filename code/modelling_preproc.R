@@ -73,7 +73,7 @@ split_set <- ifelse (df_mean$id %in% train_ids, "train", "test")
 df_mean$split_set <- split_set
 
 
-saveRDS(df_mean, file="output/data_comb.RDS")
+#saveRDS(df_mean, file="output/data_comb.RDS")
 
 ## Scale for pffr and deep learning-------------------------------------------------------------------------
 
