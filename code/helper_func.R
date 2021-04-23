@@ -94,7 +94,7 @@ results_plot <- function (test, pred, response, ynames) {
 
   ggplot (df_plot) +
     geom_line(aes(x = cycle, y = Mean, colour = var), size = 2) +
-    geom_ribbon(aes(x = cycle, ymin = Mean - Sd, ymax = Mean + Sd, fill = var), alpha = 0.4) +
+    geom_ribbon(aes(x = cycle, ymin = Mean - Sd, ymax = Mean + Sd, fill = var), alpha = 0.2) +
     scale_color_manual(values = c("black", "red")) +
     scale_fill_manual(values = c("black", "red")) +
     guides(fill = "none") +
