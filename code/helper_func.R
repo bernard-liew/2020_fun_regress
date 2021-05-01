@@ -106,3 +106,17 @@ results_plot <- function (test, pred, response, ynames) {
 
 
 }
+
+# Deep learning helpers
+
+cnn_block <- function(filters, kernel_size, pool_size, rate, input_shape = NULL){
+  function(x){
+    x %>% 
+      layer_conv_2d(filters, kernel_size, padding="same", input_shape = input_shape) %>% 
+      layer_activation(activation = "relu") %>% 
+      layer_batch_normalization() %>% 
+      layer_max_pooling_2d(pool_size = pool_size) %>% 
+      layer_dropout(rate = rate)
+  }
+}
+

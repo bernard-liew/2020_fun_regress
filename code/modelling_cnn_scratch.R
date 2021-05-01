@@ -7,6 +7,7 @@ library (reticulate)
 
 # modelling
 library (keras)
+library(tensorflow)
 
 # image
 library (imager)
@@ -26,11 +27,6 @@ load ("output/deep_data.RData")
 wid <- 150
 ht <- 150
 
-
-conv_base <- application_vgg16(weights = 'imagenet', include_top = FALSE, input_shape = c(wid,ht,3))
-
-# Consider freezing bottom weights to prevent overfit
-#freeze_weights(conv_base, from = "conv5_block10_0_relu ")
 
 # Resize  input using cubic interpolation [5]
 
@@ -54,32 +50,40 @@ test_y <- test_y_array[,,outname, axes]
 
 # Create model --------------------------------------------------------------
 
-model <- keras_model_sequential() %>%
-  conv_base %>%
-  # layer_max_pooling_2d(pool_size = c(4, 4)) %>%
-  layer_flatten() %>%
-  layer_dense (units = 256, activation = "relu") %>%
+cnn1 <- cnn_block(filters = 16, kernel_size = c(3,3), pool_size = c(3,3), rate = 0.25,
+                  shape(wid, ht, 3))
+cnn2 <- cnn_block(filters = 32, kernel_size = c(3,3), pool_size = c(2,2), rate = 0.25)
+cnn3 <- cnn_block(filters = 32, kernel_size = c(3,3), pool_size = c(2,2), rate = 0.25)
+
+model <- keras_model_sequential() %>% 
+  cnn1() %>% 
+  cnn2() %>% 
+  cnn3() %>% 
+  # branch end
+  layer_flatten() %>% 
+  layer_dense(256) %>% 
   layer_activation(activation = "relu") %>% 
   layer_batch_normalization() %>% 
   layer_dropout(rate = 0.5) %>% 
-  layer_dense (units = 101, activation = "linear")
-
-freeze_weights(conv_base)
+  layer_dense(101)
 
 
 model %>% compile(
-  optimizer = "rmsprop",
+  optimizer = optimizer_adam(lr = 0.0001),
   loss = "mse",
   metrics = c("mae")
 )
 
 history <- model %>% fit(
   train_x, train_y,
-  epochs = 20,
+  epochs = 200,
   batch_size = 16,
   validation_data = list(val_x, val_y),
   callbacks =   list(
-    callback_early_stopping(patience = 5)
+    callback_learning_rate_scheduler(
+      tf$keras$experimental$CosineDecayRestarts(.02, 10, t_mul = 2, m_mul = .7)
+    ),
+    callback_early_stopping(patience = 15)
   )
 )
 
@@ -87,7 +91,7 @@ history <- model %>% fit(
 test_y_pred <- model %>% predict(test_x)
 
 # Plot performance -------------------------------------------------------------
-plot (history)
+# plot (history)
 
 par(mfrow=c(1,2))
 matplot (t(test_y), type = "l")
