@@ -112,6 +112,9 @@ for (n in seq_along (axes)) {
 
 # Rename dimensions of array
 
+dimnames(train_x_array)[[1]] <- dimnames(train_y_array)[[1]] <- train$id
+dimnames(test_x_array)[[1]] <- dimnames(test_y_array)[[1]] <- test$id
+
 dimnames(train_x_array)[[3]] <- dimnames(test_x_array)[[3]] <- prednames
 dimnames(train_y_array)[[3]] <- dimnames(test_y_array)[[3]] <- outnames
 
