@@ -12,7 +12,9 @@ analysis/*_cache
 analysis/site_libs
 manuscript/
 data/
-output/*
+output/*.R*
+output/*.h5
+output/*.pdf
 !output/train_data.RDS
 !output/test_data.RDS
 !output/deep_data.RData
