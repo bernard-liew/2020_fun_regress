@@ -320,7 +320,7 @@ $(document).ready(function () {
 
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
-<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 </button>
 </p>
 <div id="workflowr-report" class="collapse">
@@ -329,7 +329,7 @@ $(document).ready(function () {
 <a data-toggle="tab" href="#summary">Summary</a>
 </li>
 <li>
-<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
 </li>
 <li>
 <a data-toggle="tab" href="#versions">Past versions</a>
@@ -341,7 +341,7 @@ $(document).ready(function () {
 <strong>Last updated:</strong> 2021-06-03
 </p>
 <p>
-<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 1 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 2 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
 </p>
 <p>
 <strong>Knit directory:</strong> <code>2020_fun_regress/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
@@ -357,28 +357,28 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
 </p>
 </div>
-<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
 </div>
 </div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcombernardliew2020funregresstree914158b1d34d1cf3baa6ae0988f9dd35ca6ba154targetblank914158ba"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/bernard-liew/2020_fun_regress/tree/914158b1d34d1cf3baa6ae0988f9dd35ca6ba154" target="_blank">914158b</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcombernardliew2020funregresstree888960784d1cf536b043c23b11660b5599b120d1targetblank8889607a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/bernard-liew/2020_fun_regress/tree/888960784d1cf536b043c23b11660b5599b120d1" target="_blank">8889607</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcombernardliew2020funregresstree914158b1d34d1cf3baa6ae0988f9dd35ca6ba154targetblank914158ba" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcombernardliew2020funregresstree888960784d1cf536b043c23b11660b5599b120d1targetblank8889607a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://github.com/bernard-liew/2020_fun_regress/tree/914158b1d34d1cf3baa6ae0988f9dd35ca6ba154" target="_blank">914158b</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/bernard-liew/2020_fun_regress/tree/888960784d1cf536b043c23b11660b5599b120d1" target="_blank">8889607</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -389,14 +389,304 @@ Ignored files:
     Ignored:    .Rproj.user/
     Ignored:    data/
     Ignored:    manuscript/
-    Ignored:    output/
-
-Untracked files:
-    Untracked:  analysis/code_for_publish.Rmd
-
-Unstaged changes:
-    Modified:   .gitignore
-    Modified:   analysis/index.Rmd
+    Ignored:    output/MeasuresFix_ankle_moment_ap.RDS
+    Ignored:    output/MeasuresFix_ankle_moment_ml.RDS
+    Ignored:    output/MeasuresFix_ankle_moment_vt.RDS
+    Ignored:    output/MeasuresFix_com_grf_ap.RDS
+    Ignored:    output/MeasuresFix_com_grf_ml.RDS
+    Ignored:    output/MeasuresFix_com_grf_vt.RDS
+    Ignored:    output/MeasuresFix_hip_moment_ap.RDS
+    Ignored:    output/MeasuresFix_hip_moment_ml.RDS
+    Ignored:    output/MeasuresFix_hip_moment_vt.RDS
+    Ignored:    output/MeasuresFix_knee_moment_ap.RDS
+    Ignored:    output/MeasuresFix_knee_moment_ml.RDS
+    Ignored:    output/MeasuresFix_knee_moment_vt.RDS
+    Ignored:    output/MeasuresFx_ankle_moment_ap.RDS
+    Ignored:    output/MeasuresFx_ankle_moment_ml.RDS
+    Ignored:    output/MeasuresFx_ankle_moment_vt.RDS
+    Ignored:    output/MeasuresFx_com_grf_ap.RDS
+    Ignored:    output/MeasuresFx_com_grf_ml.RDS
+    Ignored:    output/MeasuresFx_com_grf_vt.RDS
+    Ignored:    output/MeasuresFx_hip_moment_ap.RDS
+    Ignored:    output/MeasuresFx_hip_moment_ml.RDS
+    Ignored:    output/MeasuresFx_hip_moment_vt.RDS
+    Ignored:    output/MeasuresFx_knee_moment_ap.RDS
+    Ignored:    output/MeasuresFx_knee_moment_ml.RDS
+    Ignored:    output/MeasuresFx_knee_moment_vt.RDS
+    Ignored:    output/Measures_ankle_moment_ap.RDS
+    Ignored:    output/Measures_ankle_moment_ml.RDS
+    Ignored:    output/Measures_ankle_moment_vt.RDS
+    Ignored:    output/Measures_com_grf_ap.RDS
+    Ignored:    output/Measures_com_grf_ml.RDS
+    Ignored:    output/Measures_com_grf_vt.RDS
+    Ignored:    output/Measures_hip_moment_ap.RDS
+    Ignored:    output/Measures_hip_moment_ml.RDS
+    Ignored:    output/Measures_hip_moment_vt.RDS
+    Ignored:    output/Measures_knee_moment_ap.RDS
+    Ignored:    output/Measures_knee_moment_ml.RDS
+    Ignored:    output/Measures_knee_moment_vt.RDS
+    Ignored:    output/Measureslag_ankle_moment_ap.RDS
+    Ignored:    output/Measureslag_ankle_moment_ml.RDS
+    Ignored:    output/Measureslag_ankle_moment_vt.RDS
+    Ignored:    output/Measureslag_com_grf_ap.RDS
+    Ignored:    output/Measureslag_com_grf_ml.RDS
+    Ignored:    output/Measureslag_com_grf_vt.RDS
+    Ignored:    output/Measureslag_hip_moment_ap.RDS
+    Ignored:    output/Measureslag_hip_moment_ml.RDS
+    Ignored:    output/Measureslag_hip_moment_vt.RDS
+    Ignored:    output/Measureslag_knee_moment_ap.RDS
+    Ignored:    output/Measureslag_knee_moment_ml.RDS
+    Ignored:    output/Measureslag_knee_moment_vt.RDS
+    Ignored:    output/MeasuresnoRE_ankle_moment_ap.RDS
+    Ignored:    output/MeasuresnoRE_ankle_moment_ml.RDS
+    Ignored:    output/MeasuresnoRE_ankle_moment_vt.RDS
+    Ignored:    output/MeasuresnoRE_com_grf_ap.RDS
+    Ignored:    output/MeasuresnoRE_com_grf_ml.RDS
+    Ignored:    output/MeasuresnoRE_com_grf_vt.RDS
+    Ignored:    output/MeasuresnoRE_hip_moment_ap.RDS
+    Ignored:    output/MeasuresnoRE_hip_moment_ml.RDS
+    Ignored:    output/MeasuresnoRE_hip_moment_vt.RDS
+    Ignored:    output/MeasuresnoRE_knee_moment_ap.RDS
+    Ignored:    output/MeasuresnoRE_knee_moment_ml.RDS
+    Ignored:    output/MeasuresnoRE_knee_moment_vt.RDS
+    Ignored:    output/MeasuresnoRElag_ankle_moment_ap.RDS
+    Ignored:    output/MeasuresnoRElag_ankle_moment_ml.RDS
+    Ignored:    output/MeasuresnoRElag_ankle_moment_vt.RDS
+    Ignored:    output/MeasuresnoRElag_com_grf_ap.RDS
+    Ignored:    output/MeasuresnoRElag_com_grf_ml.RDS
+    Ignored:    output/MeasuresnoRElag_com_grf_vt.RDS
+    Ignored:    output/MeasuresnoRElag_hip_moment_ap.RDS
+    Ignored:    output/MeasuresnoRElag_hip_moment_ml.RDS
+    Ignored:    output/MeasuresnoRElag_hip_moment_vt.RDS
+    Ignored:    output/MeasuresnoRElag_knee_moment_ap.RDS
+    Ignored:    output/MeasuresnoRElag_knee_moment_ml.RDS
+    Ignored:    output/MeasuresnoRElag_knee_moment_vt.RDS
+    Ignored:    output/ModelFix_ankle_moment_ap.RDS
+    Ignored:    output/ModelFix_ankle_moment_ml.RDS
+    Ignored:    output/ModelFix_ankle_moment_vt.RDS
+    Ignored:    output/ModelFix_com_grf_ap.RDS
+    Ignored:    output/ModelFix_com_grf_ml.RDS
+    Ignored:    output/ModelFix_com_grf_vt.RDS
+    Ignored:    output/ModelFix_hip_moment_ap.RDS
+    Ignored:    output/ModelFix_hip_moment_ml.RDS
+    Ignored:    output/ModelFix_hip_moment_vt.RDS
+    Ignored:    output/ModelFix_knee_moment_ap.RDS
+    Ignored:    output/ModelFix_knee_moment_ml.RDS
+    Ignored:    output/ModelFix_knee_moment_vt.RDS
+    Ignored:    output/ModelFx_ankle_moment_ap.RDS
+    Ignored:    output/ModelFx_ankle_moment_ml.RDS
+    Ignored:    output/ModelFx_ankle_moment_vt.RDS
+    Ignored:    output/ModelFx_com_grf_ap.RDS
+    Ignored:    output/ModelFx_com_grf_ml.RDS
+    Ignored:    output/ModelFx_com_grf_vt.RDS
+    Ignored:    output/ModelFx_hip_moment_ap.RDS
+    Ignored:    output/ModelFx_hip_moment_ml.RDS
+    Ignored:    output/ModelFx_hip_moment_vt.RDS
+    Ignored:    output/ModelFx_knee_moment_ap.RDS
+    Ignored:    output/ModelFx_knee_moment_ml.RDS
+    Ignored:    output/ModelFx_knee_moment_vt.RDS
+    Ignored:    output/Model_ankle_moment_ap.RDS
+    Ignored:    output/Model_ankle_moment_ml.RDS
+    Ignored:    output/Model_ankle_moment_vt.RDS
+    Ignored:    output/Model_com_grf_ap (bl19622@essex.ac.uk).RDS
+    Ignored:    output/Model_com_grf_ap.RDS
+    Ignored:    output/Model_com_grf_ml.RDS
+    Ignored:    output/Model_com_grf_vt.RDS
+    Ignored:    output/Model_hip_moment_ap.RDS
+    Ignored:    output/Model_hip_moment_ml.RDS
+    Ignored:    output/Model_hip_moment_vt.RDS
+    Ignored:    output/Model_knee_moment_ap.RDS
+    Ignored:    output/Model_knee_moment_ml.RDS
+    Ignored:    output/Model_knee_moment_vt.RDS
+    Ignored:    output/Modellag_ankle_moment_ap.RDS
+    Ignored:    output/Modellag_ankle_moment_ml.RDS
+    Ignored:    output/Modellag_ankle_moment_vt.RDS
+    Ignored:    output/Modellag_com_grf_ap.RDS
+    Ignored:    output/Modellag_com_grf_ml.RDS
+    Ignored:    output/Modellag_com_grf_vt.RDS
+    Ignored:    output/Modellag_hip_moment_ap.RDS
+    Ignored:    output/Modellag_hip_moment_ml.RDS
+    Ignored:    output/Modellag_hip_moment_vt.RDS
+    Ignored:    output/Modellag_knee_moment_ap.RDS
+    Ignored:    output/Modellag_knee_moment_ml.RDS
+    Ignored:    output/Modellag_knee_moment_vt.RDS
+    Ignored:    output/ModelnoRE_ankle_moment_ap.RDS
+    Ignored:    output/ModelnoRE_ankle_moment_ml.RDS
+    Ignored:    output/ModelnoRE_ankle_moment_vt.RDS
+    Ignored:    output/ModelnoRE_com_grf_ap.RDS
+    Ignored:    output/ModelnoRE_com_grf_ml.RDS
+    Ignored:    output/ModelnoRE_com_grf_vt.RDS
+    Ignored:    output/ModelnoRE_hip_moment_ap.RDS
+    Ignored:    output/ModelnoRE_hip_moment_ml.RDS
+    Ignored:    output/ModelnoRE_hip_moment_vt.RDS
+    Ignored:    output/ModelnoRE_knee_moment_ap.RDS
+    Ignored:    output/ModelnoRE_knee_moment_ml.RDS
+    Ignored:    output/ModelnoRE_knee_moment_vt.RDS
+    Ignored:    output/ModelnoRElag_ankle_moment_ap.RDS
+    Ignored:    output/ModelnoRElag_ankle_moment_ml.RDS
+    Ignored:    output/ModelnoRElag_ankle_moment_vt.RDS
+    Ignored:    output/ModelnoRElag_com_grf_ap.RDS
+    Ignored:    output/ModelnoRElag_com_grf_ml.RDS
+    Ignored:    output/ModelnoRElag_com_grf_vt.RDS
+    Ignored:    output/ModelnoRElag_hip_moment_ap.RDS
+    Ignored:    output/ModelnoRElag_hip_moment_ml.RDS
+    Ignored:    output/ModelnoRElag_hip_moment_vt.RDS
+    Ignored:    output/ModelnoRElag_knee_moment_ap.RDS
+    Ignored:    output/ModelnoRElag_knee_moment_ml.RDS
+    Ignored:    output/ModelnoRElag_knee_moment_vt.RDS
+    Ignored:    output/PredictionFix_ankle_moment_ap.RDS
+    Ignored:    output/PredictionFix_ankle_moment_ml.RDS
+    Ignored:    output/PredictionFix_ankle_moment_vt.RDS
+    Ignored:    output/PredictionFix_com_grf_ap.RDS
+    Ignored:    output/PredictionFix_com_grf_ml.RDS
+    Ignored:    output/PredictionFix_com_grf_vt.RDS
+    Ignored:    output/PredictionFix_hip_moment_ap.RDS
+    Ignored:    output/PredictionFix_hip_moment_ml.RDS
+    Ignored:    output/PredictionFix_hip_moment_vt.RDS
+    Ignored:    output/PredictionFix_knee_moment_ap.RDS
+    Ignored:    output/PredictionFix_knee_moment_ml.RDS
+    Ignored:    output/PredictionFix_knee_moment_vt.RDS
+    Ignored:    output/PredictionFx_ankle_moment_ap.RDS
+    Ignored:    output/PredictionFx_ankle_moment_ml.RDS
+    Ignored:    output/PredictionFx_ankle_moment_vt.RDS
+    Ignored:    output/PredictionFx_com_grf_ap.RDS
+    Ignored:    output/PredictionFx_com_grf_ml.RDS
+    Ignored:    output/PredictionFx_com_grf_vt.RDS
+    Ignored:    output/PredictionFx_hip_moment_ap.RDS
+    Ignored:    output/PredictionFx_hip_moment_ml.RDS
+    Ignored:    output/PredictionFx_hip_moment_vt.RDS
+    Ignored:    output/PredictionFx_knee_moment_ap.RDS
+    Ignored:    output/PredictionFx_knee_moment_ml.RDS
+    Ignored:    output/PredictionFx_knee_moment_vt.RDS
+    Ignored:    output/Prediction_ankle_moment_ap.RDS
+    Ignored:    output/Prediction_ankle_moment_ml.RDS
+    Ignored:    output/Prediction_ankle_moment_vt.RDS
+    Ignored:    output/Prediction_com_grf_ap.RDS
+    Ignored:    output/Prediction_com_grf_ml.RDS
+    Ignored:    output/Prediction_com_grf_vt.RDS
+    Ignored:    output/Prediction_hip_moment_ap.RDS
+    Ignored:    output/Prediction_hip_moment_ml.RDS
+    Ignored:    output/Prediction_hip_moment_vt.RDS
+    Ignored:    output/Prediction_knee_moment_ap.RDS
+    Ignored:    output/Prediction_knee_moment_ml.RDS
+    Ignored:    output/Prediction_knee_moment_vt.RDS
+    Ignored:    output/Predictionlag_ankle_moment_ap.RDS
+    Ignored:    output/Predictionlag_ankle_moment_ml.RDS
+    Ignored:    output/Predictionlag_ankle_moment_vt.RDS
+    Ignored:    output/Predictionlag_com_grf_ap.RDS
+    Ignored:    output/Predictionlag_com_grf_ml.RDS
+    Ignored:    output/Predictionlag_com_grf_vt.RDS
+    Ignored:    output/Predictionlag_hip_moment_ap.RDS
+    Ignored:    output/Predictionlag_hip_moment_ml.RDS
+    Ignored:    output/Predictionlag_hip_moment_vt.RDS
+    Ignored:    output/Predictionlag_knee_moment_ap.RDS
+    Ignored:    output/Predictionlag_knee_moment_ml.RDS
+    Ignored:    output/Predictionlag_knee_moment_vt.RDS
+    Ignored:    output/PredictionnoRE_ankle_moment_ap.RDS
+    Ignored:    output/PredictionnoRE_ankle_moment_ml.RDS
+    Ignored:    output/PredictionnoRE_ankle_moment_vt.RDS
+    Ignored:    output/PredictionnoRE_com_grf_ap.RDS
+    Ignored:    output/PredictionnoRE_com_grf_ml.RDS
+    Ignored:    output/PredictionnoRE_com_grf_vt.RDS
+    Ignored:    output/PredictionnoRE_hip_moment_ap.RDS
+    Ignored:    output/PredictionnoRE_hip_moment_ml.RDS
+    Ignored:    output/PredictionnoRE_hip_moment_vt.RDS
+    Ignored:    output/PredictionnoRE_knee_moment_ap.RDS
+    Ignored:    output/PredictionnoRE_knee_moment_ml.RDS
+    Ignored:    output/PredictionnoRE_knee_moment_vt.RDS
+    Ignored:    output/PredictionnoRElag_ankle_moment_ap.RDS
+    Ignored:    output/PredictionnoRElag_ankle_moment_ml.RDS
+    Ignored:    output/PredictionnoRElag_ankle_moment_vt.RDS
+    Ignored:    output/PredictionnoRElag_com_grf_ap.RDS
+    Ignored:    output/PredictionnoRElag_com_grf_ml.RDS
+    Ignored:    output/PredictionnoRElag_com_grf_vt.RDS
+    Ignored:    output/PredictionnoRElag_hip_moment_ap.RDS
+    Ignored:    output/PredictionnoRElag_hip_moment_ml.RDS
+    Ignored:    output/PredictionnoRElag_hip_moment_vt.RDS
+    Ignored:    output/PredictionnoRElag_knee_moment_ap.RDS
+    Ignored:    output/PredictionnoRElag_knee_moment_ml.RDS
+    Ignored:    output/PredictionnoRElag_knee_moment_vt.RDS
+    Ignored:    output/allstudy_ind_plots.pdf
+    Ignored:    output/bernard_study1_clean_plots.pdf
+    Ignored:    output/bernard_study1_plots.pdf
+    Ignored:    output/bernard_study2_post_clean_plots.pdf
+    Ignored:    output/bernard_study2_post_plots.pdf
+    Ignored:    output/bernard_study2_pre_clean_plots.pdf
+    Ignored:    output/bernard_study2_pre_plots.pdf
+    Ignored:    output/data_4sets.RDS
+    Ignored:    output/data_bernard_study1.RDS
+    Ignored:    output/data_bernard_study1.RData
+    Ignored:    output/data_bernard_study2_post.RDS
+    Ignored:    output/data_bernard_study2_post.RData
+    Ignored:    output/data_bernard_study2_pre.RDS
+    Ignored:    output/data_bernard_study2_pre.RData
+    Ignored:    output/data_clean_bernard_study1.RDS
+    Ignored:    output/data_clean_bernard_study2_post.RDS
+    Ignored:    output/data_clean_bernard_study2_pre.RDS
+    Ignored:    output/data_clean_fukuchi.RDS
+    Ignored:    output/data_comb.RDS
+    Ignored:    output/data_fukuchi.RDS
+    Ignored:    output/data_fukuchi.RData
+    Ignored:    output/deepScratch.pdf
+    Ignored:    output/deepTL.pdf
+    Ignored:    output/deepTLunfrz.pdf
+    Ignored:    output/deep_test_data.RDS
+    Ignored:    output/deep_train_data.RDS
+    Ignored:    output/fukuchi_clean_plots.pdf
+    Ignored:    output/fukuchi_plots.pdf
+    Ignored:    output/id_bernard_study1.RDS
+    Ignored:    output/id_bernard_study2_post.RDS
+    Ignored:    output/id_bernard_study2_pre.RDS
+    Ignored:    output/id_fukuchi.RDS
+    Ignored:    output/kerasScra_ankle_moment_ap.h5
+    Ignored:    output/kerasScra_ankle_moment_ml.h5
+    Ignored:    output/kerasScra_ankle_moment_vt.h5
+    Ignored:    output/kerasScra_com_grf_ap.h5
+    Ignored:    output/kerasScra_com_grf_ml.h5
+    Ignored:    output/kerasScra_com_grf_vt.h5
+    Ignored:    output/kerasScra_hip_moment_ap.h5
+    Ignored:    output/kerasScra_hip_moment_ml.h5
+    Ignored:    output/kerasScra_hip_moment_vt.h5
+    Ignored:    output/kerasScra_knee_moment_ap.h5
+    Ignored:    output/kerasScra_knee_moment_ml.h5
+    Ignored:    output/kerasScra_knee_moment_vt.h5
+    Ignored:    output/kerasTL_ankle_moment_ap.h5
+    Ignored:    output/kerasTL_ankle_moment_ml.h5
+    Ignored:    output/kerasTL_ankle_moment_vt.h5
+    Ignored:    output/kerasTL_com_grf_ap.h5
+    Ignored:    output/kerasTL_com_grf_ml.h5
+    Ignored:    output/kerasTL_com_grf_vt.h5
+    Ignored:    output/kerasTL_hip_moment_ap.h5
+    Ignored:    output/kerasTL_hip_moment_ml.h5
+    Ignored:    output/kerasTL_hip_moment_vt.h5
+    Ignored:    output/kerasTL_knee_moment_ap.h5
+    Ignored:    output/kerasTL_knee_moment_ml.h5
+    Ignored:    output/kerasTL_knee_moment_vt.h5
+    Ignored:    output/kerasTLunfrz_ankle_moment_ap.h5
+    Ignored:    output/kerasTLunfrz_ankle_moment_ml.h5
+    Ignored:    output/kerasTLunfrz_ankle_moment_vt.h5
+    Ignored:    output/kerasTLunfrz_com_grf_ap.h5
+    Ignored:    output/kerasTLunfrz_com_grf_ml.h5
+    Ignored:    output/kerasTLunfrz_com_grf_vt.h5
+    Ignored:    output/kerasTLunfrz_hip_moment_ap.h5
+    Ignored:    output/kerasTLunfrz_hip_moment_ml.h5
+    Ignored:    output/kerasTLunfrz_hip_moment_vt.h5
+    Ignored:    output/kerasTLunfrz_knee_moment_ap.h5
+    Ignored:    output/kerasTLunfrz_knee_moment_ml.h5
+    Ignored:    output/kerasTLunfrz_knee_moment_vt.h5
+    Ignored:    output/mean_plots.pdf
+    Ignored:    output/pffr_Fxonly.pdf
+    Ignored:    output/pffr_test_data.RDS
+    Ignored:    output/pffr_train_data.RDS
+    Ignored:    output/predict.pdf
+    Ignored:    output/predictCondfix.pdf
+    Ignored:    output/predict_lag.pdf
+    Ignored:    output/predict_noRE.pdf
+    Ignored:    output/predict_noRElag.pdf
+    Ignored:    output/prediction_results.RDS
+    Ignored:    output/scales.RDS
+    Ignored:    output/test_lagdata.RDS
+    Ignored:    output/train_lagdata.RDS
 
 </code></pre>
 <p>
@@ -435,6 +725,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/bernard-liew/2020_fun_regress/blob/86b93fa3cc935fc3c945c719d7a76240694998c7/analysis/index.Rmd" target="_blank">86b93fa</a>
+</td>
+<td>
+Bernard
+</td>
+<td>
+2021-06-03
+</td>
+<td>
+added website to include code
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/bernard-liew/2020_fun_regress/86b93fa3cc935fc3c945c719d7a76240694998c7/docs/index.html" target="_blank">86b93fa</a>
+</td>
+<td>
+Bernard
+</td>
+<td>
+2021-06-03
+</td>
+<td>
+added website to include code
+</td>
+</tr>
 <tr>
 <td>
 Rmd
