@@ -1,0 +1,2238 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Bernard" />
+
+<meta name="date" content="2021-06-03" />
+
+<title>code_for_publish</title>
+
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">fun_regress</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">code_for_publish</h1>
+<h4 class="author">Bernard</h4>
+<h4 class="date">2021-06-03</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2021-06-03
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>2020_fun_regress/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20200511code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20200511)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20200511code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20200511)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcombernardliew2020funregresstree914158b1d34d1cf3baa6ae0988f9dd35ca6ba154targetblank914158ba"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/bernard-liew/2020_fun_regress/tree/914158b1d34d1cf3baa6ae0988f9dd35ca6ba154" target="_blank">914158b</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcombernardliew2020funregresstree914158b1d34d1cf3baa6ae0988f9dd35ca6ba154targetblank914158ba" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://github.com/bernard-liew/2020_fun_regress/tree/914158b1d34d1cf3baa6ae0988f9dd35ca6ba154" target="_blank">914158b</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    data/
+    Ignored:    manuscript/
+    Ignored:    output/
+
+Untracked files:
+    Untracked:  analysis/code_for_publish.Rmd
+
+Unstaged changes:
+    Modified:   .gitignore
+    Modified:   analysis/index.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with <code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="load-packages" class="section level1">
+<h1>Load packages</h1>
+<pre class="r"><code>#Load packages------------------------------------------------------------
+# helper
+library(tidyverse)</code></pre>
+<pre><code>Warning: package &#39;tidyverse&#39; was built under R version 4.0.3</code></pre>
+<pre><code>-- Attaching packages --------------------------------------- tidyverse 1.3.0 --</code></pre>
+<pre><code>v ggplot2 3.3.3     v purrr   0.3.4
+v tibble  3.0.4     v dplyr   1.0.2
+v tidyr   1.1.2     v stringr 1.4.0
+v readr   1.4.0     v forcats 0.5.0</code></pre>
+<pre><code>Warning: package &#39;ggplot2&#39; was built under R version 4.0.3</code></pre>
+<pre><code>Warning: package &#39;tibble&#39; was built under R version 4.0.3</code></pre>
+<pre><code>Warning: package &#39;tidyr&#39; was built under R version 4.0.3</code></pre>
+<pre><code>Warning: package &#39;readr&#39; was built under R version 4.0.3</code></pre>
+<pre><code>Warning: package &#39;purrr&#39; was built under R version 4.0.3</code></pre>
+<pre><code>Warning: package &#39;dplyr&#39; was built under R version 4.0.3</code></pre>
+<pre><code>Warning: package &#39;stringr&#39; was built under R version 4.0.3</code></pre>
+<pre><code>Warning: package &#39;forcats&#39; was built under R version 4.0.3</code></pre>
+<pre><code>-- Conflicts ------------------------------------------ tidyverse_conflicts() --
+x dplyr::filter() masks stats::filter()
+x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code># modelling
+library (refund)</code></pre>
+<pre><code>Warning: package &#39;refund&#39; was built under R version 4.0.3</code></pre>
+<pre class="r"><code>library (keras)</code></pre>
+<pre><code>Warning: package &#39;keras&#39; was built under R version 4.0.3</code></pre>
+<pre class="r"><code>library(tensorflow)</code></pre>
+<pre><code>Warning: package &#39;tensorflow&#39; was built under R version 4.0.3</code></pre>
+<pre class="r"><code># image
+library (imager)</code></pre>
+<pre><code>Warning: package &#39;imager&#39; was built under R version 4.0.3</code></pre>
+<pre><code>Loading required package: magrittr</code></pre>
+<pre><code>Warning: package &#39;magrittr&#39; was built under R version 4.0.3</code></pre>
+<pre><code>
+Attaching package: &#39;magrittr&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:purrr&#39;:
+
+    set_names</code></pre>
+<pre><code>The following object is masked from &#39;package:tidyr&#39;:
+
+    extract</code></pre>
+<pre><code>
+Attaching package: &#39;imager&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:magrittr&#39;:
+
+    add</code></pre>
+<pre><code>The following object is masked from &#39;package:stringr&#39;:
+
+    boundary</code></pre>
+<pre><code>The following object is masked from &#39;package:tidyr&#39;:
+
+    fill</code></pre>
+<pre><code>The following objects are masked from &#39;package:stats&#39;:
+
+    convolve, spectrum</code></pre>
+<pre><code>The following object is masked from &#39;package:graphics&#39;:
+
+    frame</code></pre>
+<pre><code>The following object is masked from &#39;package:base&#39;:
+
+    save.image</code></pre>
+<pre class="r"><code># parallel
+library (doParallel)</code></pre>
+<pre><code>Warning: package &#39;doParallel&#39; was built under R version 4.0.3</code></pre>
+<pre><code>Loading required package: foreach</code></pre>
+<pre><code>Warning: package &#39;foreach&#39; was built under R version 4.0.3</code></pre>
+<pre><code>
+Attaching package: &#39;foreach&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:purrr&#39;:
+
+    accumulate, when</code></pre>
+<pre><code>Loading required package: iterators</code></pre>
+<pre><code>Warning: package &#39;iterators&#39; was built under R version 4.0.3</code></pre>
+<pre><code>Loading required package: parallel</code></pre>
+<pre class="r"><code>library (foreach)
+
+# plotting
+library (cowplot)</code></pre>
+<pre><code>Warning: package &#39;cowplot&#39; was built under R version 4.0.3</code></pre>
+<pre><code>
+Attaching package: &#39;cowplot&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:imager&#39;:
+
+    draw_text</code></pre>
+<pre class="r"><code>library (ggpubr)</code></pre>
+<pre><code>Warning: package &#39;ggpubr&#39; was built under R version 4.0.3</code></pre>
+<pre><code>Registered S3 methods overwritten by &#39;car&#39;:
+  method                          from
+  influence.merMod                lme4
+  cooks.distance.influence.merMod lme4
+  dfbeta.influence.merMod         lme4
+  dfbetas.influence.merMod        lme4</code></pre>
+<pre><code>
+Attaching package: &#39;ggpubr&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:cowplot&#39;:
+
+    get_legend</code></pre>
+<pre class="r"><code># Tables
+library (officer)</code></pre>
+<pre><code>Warning: package &#39;officer&#39; was built under R version 4.0.3</code></pre>
+<pre class="r"><code>library (flextable)</code></pre>
+<pre><code>Warning: package &#39;flextable&#39; was built under R version 4.0.3</code></pre>
+<pre><code>
+Attaching package: &#39;flextable&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:ggpubr&#39;:
+
+    border, font, rotate</code></pre>
+<pre><code>The following objects are masked from &#39;package:imager&#39;:
+
+    height, highlight, width</code></pre>
+<pre><code>The following object is masked from &#39;package:purrr&#39;:
+
+    compose</code></pre>
+<pre class="r"><code>library (qwraps2)</code></pre>
+<pre><code>Warning: package &#39;qwraps2&#39; was built under R version 4.0.3</code></pre>
+<pre><code>
+Attaching package: &#39;qwraps2&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:ggpubr&#39;:
+
+    mean_ci, mean_sd, median_iqr</code></pre>
+<pre class="r"><code># Custom measures
+source(&quot;code/measures_johnson.R&quot;)
+source(&quot;code/helper_func.R&quot;)</code></pre>
+</div>
+<div id="machine-learning" class="section level1">
+<h1>Machine learning</h1>
+<div id="functional-regression" class="section level2">
+<h2>Functional regression</h2>
+<pre class="r"><code># Split data---------------------------------------------------------------
+
+train &lt;- readRDS(&quot;output/train_data.RDS&quot;)
+test &lt;- readRDS(&quot;output/test_data.RDS&quot;)
+
+# Get variables---------------------------------------------------------------
+
+response_vars &lt;- names(train)[grep(&quot;grf|hip_moment|knee_moment|ankle_moment&quot;, names(train))]
+pred_vars &lt;- names(train)[grep(&quot;angle|vel|accl&quot;, names(train))]
+
+
+# Modelling---------------------------------------------------------------
+
+
+for (n in seq_along(response_vars)) {
+
+  response &lt;- response_vars[n]
+
+  # Create formula
+  form &lt;- paste(response, &quot; ~ 1 + &quot;, paste(
+    paste(&quot;sff(&quot;, pred_vars,
+          &quot;, yind=cycle, xind=cycle)&quot;),
+    collapse = &quot; + &quot;)
+    )
+
+  # initialize the model
+  m &lt;- pffr(as.formula(form),
+            yind = cycle,
+            algorithm = &quot;bam&quot;,
+            data = train)
+
+
+  # plot(m)
+
+  # Save model and predictions
+
+  saveRDS(m, file = file.path (&quot;output&quot;, paste0(&quot;ModelFx_&quot;,response,&quot;.RDS&quot;)))
+
+  pp &lt;- predict(m, newdata = test[-which(names(test)==&quot;cycle&quot;)])
+
+  saveRDS(pp, file = file.path (&quot;output&quot;, paste0(&quot;PredictionFx_&quot;,response,&quot;.RDS&quot;)))
+
+  measures &lt;- all_measures(test[[response]], pp)
+
+  saveRDS(measures, file = file.path (&quot;output&quot;, paste0(&quot;MeasuresFx_&quot;,response,&quot;.RDS&quot;)))
+
+  rm(m)
+  gc()
+
+}</code></pre>
+</div>
+<div id="cnn-scratch" class="section level2">
+<h2>CNN scratch</h2>
+<pre class="r"><code># set python environment
+use_condaenv(&quot;tf-gpu&quot;)
+
+# Load data---------------------------------------------------------------
+
+load (&quot;output/deep_data.RData&quot;)
+
+out_vars &lt;- dimnames(train_y_array)[[3]]
+out_axes_vars &lt;- dimnames(train_y_array)[[4]]
+
+# Load pretrained image model ---------------------------------------------------------------
+wid &lt;- 150
+ht &lt;- 150
+
+
+# Resize  input using cubic interpolation [5]
+
+train_x &lt;- resize(train_x_array, size_y = wid, size_z = ht, interpolation_type = 5) %&gt;% as.array()
+test_x &lt;- resize(test_x_array, size_y = wid, size_z = ht, interpolation_type = 5) %&gt;% as.array()
+
+# Split train set into validate and train, as needed modelling
+
+set.seed (2839)
+val_id &lt;- sample (unique (dimnames(train_x_array)[[1]]), size = 10)
+val_id &lt;- dimnames(train_x_array)[[1]] %in% val_id
+
+val_x &lt;- train_x[val_id,,,]
+train_x &lt;- train_x[!val_id,,,]
+
+# Create model --------------------------------------------------------------
+
+cnn1 &lt;- cnn_block(filters = 32, kernel_size = c(3,3), pool_size = c(3,3), rate = 0.25,
+                  shape(wid, ht, 3))
+cnn2 &lt;- cnn_block(filters = 64, kernel_size = c(3,3), pool_size = c(2,2), rate = 0.25)
+cnn3 &lt;- cnn_block(filters = 128, kernel_size = c(3,3), pool_size = c(2,2), rate = 0.25)
+cnn4 &lt;- cnn_block(filters = 64, kernel_size = c(3,3), pool_size = c(2,2), rate = 0.25)
+
+for (out in out_vars) {
+
+  for (oaxes in out_axes_vars) {
+
+    # Select outcomes ---------------------------------------------------------
+    train_y &lt;- train_y_array[!val_id,,out, oaxes]
+    val_y &lt;- train_y_array[val_id,,out, oaxes]
+    test_y &lt;- test_y_array[,,out, oaxes]
+
+    # Create model --------------------------------------------------------------
+
+    model &lt;- keras_model_sequential() %&gt;%
+      cnn1() %&gt;%
+      cnn2() %&gt;%
+      cnn3() %&gt;%
+      #cnn4() %&gt;%
+      # branch end
+      layer_flatten() %&gt;%
+      layer_dense(256) %&gt;%
+      layer_activation(activation = &quot;relu&quot;) %&gt;%
+      layer_batch_normalization() %&gt;%
+      layer_dropout(rate = 0.5) %&gt;%
+      layer_dense(101)
+
+    model %&gt;% compile(
+      optimizer = &quot;rmsprop&quot;,
+      #optimizer = optimizer_adam(lr = 0.0001),
+      loss = &quot;mse&quot;,
+      metrics = c(&quot;mae&quot;)
+    )
+
+    history &lt;- model %&gt;% fit(
+      train_x, train_y,
+      epochs = 200,
+      batch_size = 16,
+      validation_data = list(val_x, val_y),
+      callbacks =   list(
+        callback_learning_rate_scheduler(
+          tf$keras$experimental$CosineDecayRestarts(.02, 10, t_mul = 2, m_mul = .7)
+        )
+      )
+    )
+
+    output_path &lt;- file.path (&quot;output&quot;, paste0(&quot;kerasScra_&quot;, out, &quot;_&quot;,oaxes, &quot;.h5&quot;))
+
+    save_model_hdf5(model, output_path)
+
+  }
+
+}</code></pre>
+</div>
+<div id="cnn-transfer-learning" class="section level2">
+<h2>CNN Transfer learning</h2>
+<pre class="r"><code>conv_base &lt;- application_vgg16(weights = &#39;imagenet&#39;, include_top = FALSE, input_shape = c(wid,ht,3))
+
+# Resize  input using cubic interpolation [5]
+
+train_x &lt;- resize(train_x_array, size_y = wid, size_z = ht, interpolation_type = 5) %&gt;% as.array()
+test_x &lt;- resize(test_x_array, size_y = wid, size_z = ht, interpolation_type = 5) %&gt;% as.array()
+
+# Split train set into validate and train, as needed modelling
+set.seed (2839)
+val_id &lt;- sample (unique (dimnames(train_x_array)[[1]]), size = 10)
+val_id &lt;- dimnames(train_x_array)[[1]] %in% val_id
+
+val_x &lt;- train_x[val_id,,,]
+train_x &lt;- train_x[!val_id,,,]
+
+for (out in out_vars) {
+
+  for (oaxes in out_axes_vars) {
+
+    # Select outcomes ---------------------------------------------------------
+    train_y &lt;- train_y_array[!val_id,,out, oaxes]
+    val_y &lt;- train_y_array[val_id,,out, oaxes]
+    test_y &lt;- test_y_array[,,out, oaxes]
+
+    # Create model ------------------------------------------------------------
+    model &lt;- keras_model_sequential() %&gt;%
+      conv_base %&gt;%
+      layer_flatten() %&gt;%
+      layer_dense (units = 256, activation = &quot;relu&quot;) %&gt;%
+      layer_activation(activation = &quot;relu&quot;) %&gt;%
+      layer_batch_normalization() %&gt;%
+      layer_dropout(rate = 0.5) %&gt;%
+      layer_dense (units = 101, activation = &quot;linear&quot;)
+
+    # Consider freezing bottom weights to prevent overfit
+    freeze_weights(conv_base)
+
+    # run model ------------------------------------------------------------
+    model %&gt;% compile(
+      optimizer = &quot;rmsprop&quot;,
+      #optimizer = optimizer_adam(lr = 0.0001),
+      loss = &quot;mse&quot;,
+      metrics = c(&quot;mae&quot;)
+    )
+
+    history &lt;- model %&gt;% fit(
+      train_x, train_y,
+      epochs = 200,
+      batch_size = 16,
+      validation_data = list(val_x, val_y),
+      callbacks =   list(
+        callback_learning_rate_scheduler(
+          tf$keras$experimental$CosineDecayRestarts(.02, 10, t_mul = 2, m_mul = .7)
+        )
+      )
+    )
+
+    output_path &lt;- file.path (&quot;output&quot;, paste0(&quot;kerasTL_&quot;, out, &quot;_&quot;,oaxes, &quot;.h5&quot;))
+
+    save_model_hdf5(model, output_path)
+
+  }
+
+}</code></pre>
+</div>
+</div>
+<div id="descriptives" class="section level1">
+<h1>Descriptives</h1>
+<div id="tables" class="section level2">
+<h2>Tables</h2>
+<pre class="r"><code>df &lt;- readRDS(&quot;output/data_4sets.RDS&quot;)
+
+## -------------------------------------------------------------------------------------
+
+## CHECK: df$cycle has time point 43 at the end??
+cycle &lt;- 1:101
+
+rm_obs &lt;- which (df$cond == &quot;(.10)50&quot;)
+
+df &lt;- df %&gt;%
+  map_if (is.matrix, ~.[-rm_obs,]) %&gt;%
+  map_if (is.vector, ~.[-rm_obs])
+
+
+df$cond[df$cond == &quot;runt30&quot;] &lt;- &quot;runt35&quot;
+
+df_mean &lt;- df[-which(names(df)==&quot;cycle&quot;)] %&gt;% lapply(., function(x){
+
+  ret &lt;- aggregate(as.data.frame(x), by = list(df$subj, df$cond),
+                   FUN = function(x) if(is.numeric(x)) mean(x) else x[1])[,-1*(1:2)]
+  if(NCOL(ret)&gt;1)
+    ret &lt;- as.matrix(ret)
+  return(ret)
+
+})
+
+df_mean$cycle &lt;- cycle
+names(df_mean)[1] &lt;- &quot;id&quot;
+df_mean$study &lt;- as.factor(gsub(&quot;(.*)_(.*)&quot;,&quot;\\1&quot;,df_mean$id))
+
+df_id_study &lt;- df_mean[c(&quot;id&quot;,&quot;study&quot;)] %&gt;%
+  as.data.frame()%&gt;%
+  mutate (id = factor (id))
+
+
+df_demo &lt;- df_mean [1:8] %&gt;%
+  bind_cols() %&gt;%
+  mutate (study = ifelse (grepl(&quot;fukuchi&quot;, id), &quot;fukuchi&quot;,
+                          ifelse (grepl (&quot;study1&quot;, id), &quot;study1&quot;,
+                                  ifelse (grepl (&quot;study2_pre&quot;, id), &quot;study2pre&quot;, &quot;study2post&quot;)))) %&gt;%
+  distinct(study, id, age, ht, wt, sex)
+
+
+study_id &lt;- df_demo %&gt;%
+  #distinct (study, id) %&gt;%
+  group_by (study, id) %&gt;%
+  tally ()
+
+
+
+our_summary1 &lt;-
+  list(&quot;Age (yo)&quot; =
+         list(&quot;mean (sd)&quot; = ~ qwraps2::mean_sd(age, denote_sd = &quot;paren&quot;)),
+       &quot;Height (m)&quot; =
+         list(&quot;mean (sd)&quot; = ~ qwraps2::mean_sd(ht, denote_sd = &quot;paren&quot;)),
+       &quot;Mass (kg)&quot; =
+         list(&quot;mean (sd)&quot; = ~ qwraps2::mean_sd(wt, denote_sd = &quot;paren&quot;)),
+       &quot;Sex&quot; =
+         list(&quot;Female&quot; = ~ qwraps2::n_perc0(sex == &quot;f&quot;),
+              &quot;Male&quot;  = ~ qwraps2::n_perc0(sex == &quot;m&quot;))
+       )
+
+by_cyl &lt;- summary_table(df_demo %&gt;%
+                          group_by(study), our_summary1) %&gt;%
+  as.data.frame()
+
+by_cyl$Variables &lt;-  c(&quot;Age (years)&quot;,
+                       &quot;Height (m)&quot;,
+                       &quot;Mass (kg)&quot;,
+                       &quot;Sex-F&quot;,
+                       &quot;Sex-M&quot;)
+
+by_cyl &lt;- dplyr::select (by_cyl, Variables, everything ())
+
+by_cyl %&gt;%
+  kableExtra::kable(row.names = FALSE)  %&gt;%
+  kableExtra::kable_styling ()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Variables
+</th>
+<th style="text-align:left;">
+fukuchi (N = 28)
+</th>
+<th style="text-align:left;">
+study1 (N = 31)
+</th>
+<th style="text-align:left;">
+study2post (N = 31)
+</th>
+<th style="text-align:left;">
+study2pre (N = 31)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Age (years)
+</td>
+<td style="text-align:left;">
+34.75 (6.69)
+</td>
+<td style="text-align:left;">
+30.45 (5.74)
+</td>
+<td style="text-align:left;">
+30.35 (9.11)
+</td>
+<td style="text-align:left;">
+30.35 (9.11)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Height (m)
+</td>
+<td style="text-align:left;">
+1.76 (0.07)
+</td>
+<td style="text-align:left;">
+1.70 (0.07)
+</td>
+<td style="text-align:left;">
+1.72 (0.08)
+</td>
+<td style="text-align:left;">
+1.72 (0.08)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mass (kg)
+</td>
+<td style="text-align:left;">
+69.64 (7.74)
+</td>
+<td style="text-align:left;">
+65.89 (10.61)
+</td>
+<td style="text-align:left;">
+69.57 (12.00)
+</td>
+<td style="text-align:left;">
+69.13 (12.65)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sex-F
+</td>
+<td style="text-align:left;">
+1 (4)
+</td>
+<td style="text-align:left;">
+16 (52)
+</td>
+<td style="text-align:left;">
+16 (52)
+</td>
+<td style="text-align:left;">
+16 (52)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sex-M
+</td>
+<td style="text-align:left;">
+27 (96)
+</td>
+<td style="text-align:left;">
+15 (48)
+</td>
+<td style="text-align:left;">
+15 (48)
+</td>
+<td style="text-align:left;">
+15 (48)
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="biomechanical-variable-plots" class="section level2">
+<h2>Biomechanical variable plots</h2>
+<pre class="r"><code># Plot
+
+var_plot &lt;- grepl (&quot;ankle|knee|hip&quot;, names (df_mean))
+
+df_plot_mean &lt;- df_mean [var_plot] %&gt;%
+  map (~apply (.x, 2, mean)) %&gt;%
+  bind_cols() %&gt;%
+  mutate (cycle = 1:101) %&gt;%
+  pivot_longer(cols = -cycle,
+               names_to = &quot;var&quot;,
+               values_to = &quot;Mean&quot;)
+
+df_plot_sd &lt;- df_mean [var_plot] %&gt;%
+  map (~apply (.x, 2, sd)) %&gt;%
+  bind_cols() %&gt;%
+  mutate (cycle = 1:101) %&gt;%
+  pivot_longer(cols = -cycle,
+               names_to = &quot;var&quot;,
+               values_to = &quot;Sd&quot;)
+
+df_plot &lt;- df_plot_mean %&gt;%
+  inner_join(df_plot_sd, by = c(&quot;cycle&quot;, &quot;var&quot;))
+
+# Relvel and rename
+
+newLvls &lt;- c(&quot;ankle_angle_ap&quot;, &quot;ankle_angle_ml&quot;,  &quot;ankle_angle_vt&quot;,
+             &quot;ankle_vel_ap&quot;,    &quot;ankle_vel_ml&quot;,    &quot;ankle_vel_vt&quot;,
+             &quot;ankle_accl_ap&quot;,&quot;ankle_accl_ml&quot;,&quot;ankle_accl_vt&quot;,
+             &quot;ankle_moment_ap&quot;, &quot;ankle_moment_ml&quot;, &quot;ankle_moment_vt&quot;,
+             # knee
+             &quot;knee_angle_ap&quot;, &quot;knee_angle_ml&quot;,  &quot;knee_angle_vt&quot;,
+             &quot;knee_vel_ap&quot;,    &quot;knee_vel_ml&quot;,    &quot;knee_vel_vt&quot;,
+             &quot;knee_accl_ap&quot;,&quot;knee_accl_ml&quot;,&quot;knee_accl_vt&quot;,
+             &quot;knee_moment_ap&quot;, &quot;knee_moment_ml&quot;, &quot;knee_moment_vt&quot;,
+             # hip
+             &quot;hip_angle_ap&quot;, &quot;hip_angle_ml&quot;,  &quot;hip_angle_vt&quot;,
+             &quot;hip_vel_ap&quot;,    &quot;hip_vel_ml&quot;,    &quot;hip_vel_vt&quot;,
+             &quot;hip_accl_ap&quot;,&quot;hip_accl_ml&quot;,&quot;hip_accl_vt&quot;,
+             &quot;hip_moment_ap&quot;, &quot;hip_moment_ml&quot;, &quot;hip_moment_vt&quot;)
+
+newLbls &lt;- c(&quot;Ankle Inv(+)/Eve(-) angle (deg)&quot;, &quot;Ankle DF(+)/PF(-) angle (deg)&quot;,  &quot;Ankle Add(+)/Abd(-) angle (deg)&quot;,
+             &quot;Ankle Inv(+)/Eve(-) vel (deg/s)&quot;, &quot;Ankle DF(+)/PF(-) vel (deg/s)&quot;,  &quot;Ankle Add(+)/Abd(-) vel (deg/s)&quot;,
+             &quot;Ankle Inv(+)/Eve(-) acc (deg/s2)&quot;, &quot;Ankle DF(+)/PF(-) acc (deg/s2)&quot;,  &quot;Ankle Add(+)/Abd(-) acc (deg/s2)&quot;,
+             &quot;Ankle Inv(+)/Eve(-) moment (Nm/kg)&quot;, &quot;Ankle DF(+)/PF(-) moment (Nm/kg)&quot;,  &quot;Ankle Add(+)/Abd(-) moment (Nm/kg)&quot;,
+             # Knee
+             &quot;Knee Inv(+)/Eve(-) angle (deg)&quot;, &quot;Knee DF(+)/PF(-) angle (deg)&quot;,  &quot;Knee Add(+)/Abd(-) angle (deg)&quot;,
+             &quot;Knee Inv(+)/Eve(-) vel (deg/s)&quot;, &quot;Knee DF(+)/PF(-) vel (deg/s)&quot;,  &quot;Knee Add(+)/Abd(-) vel (deg/s)&quot;,
+             &quot;Knee Inv(+)/Eve(-) acc (deg/s2)&quot;, &quot;Knee DF(+)/PF(-) acc (deg/s2)&quot;,  &quot;Knee Add(+)/Abd(-) acc (deg/s2)&quot;,
+             &quot;Knee Inv(+)/Eve(-) moment (Nm/kg)&quot;, &quot;Knee DF(+)/PF(-) moment (Nm/kg)&quot;,  &quot;Knee Add(+)/Abd(-) moment (Nm/kg)&quot;,
+             # hip
+             &quot;Hip Inv(+)/Eve(-) angle (deg)&quot;, &quot;Hip DF(+)/PF(-) angle (deg)&quot;,  &quot;Hip Add(+)/Abd(-) angle (deg)&quot;,
+             &quot;Hip Inv(+)/Eve(-) vel (deg/s)&quot;, &quot;Hip DF(+)/PF(-) vel (deg/s)&quot;,  &quot;Hip Add(+)/Abd(-) vel (deg/s)&quot;,
+             &quot;Hip Inv(+)/Eve(-) acc (deg/s2)&quot;, &quot;Hip DF(+)/PF(-) acc (deg/s2)&quot;,  &quot;Hip Add(+)/Abd(-) acc (deg/s2)&quot;,
+             &quot;Hip Inv(+)/Eve(-) moment (Nm/kg)&quot;, &quot;Hip DF(+)/PF(-) moment (Nm/kg)&quot;,  &quot;Hip Add(+)/Abd(-) moment (Nm/kg)&quot;)
+
+p &lt;- df_plot %&gt;%
+  mutate (var = factor (var, levels = newLvls, labels = newLbls)) %&gt;%
+  ggplot () +
+  geom_line(aes(x = cycle, y = Mean), size = 1) +
+  geom_ribbon(aes(x = cycle, ymin = Mean - Sd, ymax = Mean + Sd), alpha = 0.2) +
+  facet_wrap(~ var, ncol = 3, scales = &quot;free&quot;) +
+  ylab (&quot;Variables&quot;) +
+  xlab (&quot;Cycle (100%)&quot;) +
+  theme_cowplot() +
+  theme (text = element_text(size=16))
+
+p</code></pre>
+<p><img src="figure/code_for_publish.Rmd/unnamed-chunk-7-1.png" width="1152" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="results-of-machine-learning" class="section level1">
+<h1>Results of machine learning</h1>
+<div id="prediction-on-test-set" class="section level2">
+<h2>Prediction on test set</h2>
+<pre class="r"><code># Create labels for plots
+ynames &lt;- c(&quot;AP ankle (Nm/kg)&quot;,
+            &quot;ML ankle (Nm/kg)&quot;,
+            &quot;Vt ankle (Nm/kg)&quot;,
+            &quot;AP GRF (N/kg)&quot;,
+            &quot;ML GRF (N/kg)&quot;,
+            &quot;Vt GRF (N/kg)&quot;,
+            &quot;AP hip (Nm/kg)&quot;,
+            &quot;ML hip (Nm/kg)&quot;,
+            &quot;Vt hip (Nm/kg)&quot;,
+            &quot;AP knee (Nm/kg)&quot;,
+            &quot;ML knee (Nm/kg)&quot;,
+            &quot;Vt knee (Nm/kg)&quot;)
+
+varLvls &lt;- c(&quot;ankle_moment_ap&quot;,
+             &quot;ankle_moment_ml&quot;,
+             &quot;ankle_moment_vt&quot;,
+             &quot;knee_moment_ap&quot;,
+             &quot;knee_moment_ml&quot;,
+             &quot;knee_moment_vt&quot;,
+             &quot;hip_moment_ap&quot;,
+             &quot;hip_moment_ml&quot;,
+             &quot;hip_moment_vt&quot;,
+             &quot;com_grf_ap&quot;,
+             &quot;com_grf_ml&quot;,
+             &quot;com_grf_vt&quot;)
+
+yNewNames &lt;- c(&quot;Ankle Inv(+)/Eve(-)&quot;,
+               &quot;Ankle Df(+)/Pf(-)&quot;,
+               &quot;Ankle Add(+)/Abd(-)&quot;,
+               &quot;Knee Add(+)/Abd(-)&quot;,
+               &quot;Knee E(+)/F(-)&quot;,
+               &quot;Knee IR(+)/ER(-)&quot;,
+               &quot;Hip Add(+)/Abd(-)&quot;,
+               &quot;Hip F(+)/E(-)&quot;,
+               &quot;Hip IR(+)/ER(-)&quot;,
+               &quot;GRF AP&quot;,
+               &quot;GRF ML&quot;,
+               &quot;GRF VT&quot;)
+
+# PFFR -------------------------------------------------------------------------
+train &lt;- readRDS(&quot;output/train_data.RDS&quot;)
+test &lt;- readRDS(&quot;output/test_data.RDS&quot;)
+
+response_vars &lt;- names(train)[grep(&quot;grf|hip_moment|knee_moment|ankle_moment&quot;, names(train))]
+pred_vars &lt;- names(train)[grep(&quot;angle|vel|accl&quot;, names(train))]
+
+# Load models
+
+pred_list &lt;- list()
+err_list &lt;- list()
+
+for(n in seq_along (response_vars)){
+
+  pred_list[[n]] &lt;- readRDS(file.path (&quot;output&quot;, paste0(&quot;PredictionFx_&quot;,response_vars[n],&quot;.RDS&quot;)))
+  err_list[[n]] &lt;- readRDS(file.path (&quot;output&quot;, paste0(&quot;MeasuresFx_&quot;,response_vars[n],&quot;.RDS&quot;)))
+
+}
+
+# Plot and get error
+
+names (pred_list) &lt;- response_vars
+names (err_list) &lt;- response_vars
+
+obs.df.mean &lt;- test[response_vars] %&gt;%
+  map (get_meanSD, func = mean) %&gt;%
+  bind_cols() %&gt;%
+  mutate (cycle = 1:101) %&gt;%
+  pivot_longer(cols = -c (cycle),
+               names_to = &quot;var&quot;,
+               values_to = &quot;Mean&quot;)
+
+obs.df.sd &lt;- test[response_vars] %&gt;%
+  map (get_meanSD, func = sd) %&gt;%
+  bind_cols() %&gt;%
+  mutate (cycle = 1:101) %&gt;%
+  pivot_longer(cols = -c (cycle),
+               names_to = &quot;var&quot;,
+               values_to = &quot;Sd&quot;)
+
+obs.df &lt;- obs.df.mean %&gt;%
+  inner_join(obs.df.sd, by = c(&quot;cycle&quot;, &quot;var&quot;)) %&gt;%
+  rename (obs_Mean = Mean,
+          obs_Sd = Sd)
+
+
+pred.df.mean &lt;- pred_list %&gt;%
+  map (get_meanSD, func = mean) %&gt;%
+  bind_cols() %&gt;%
+  mutate (cycle = 1:101) %&gt;%
+  pivot_longer(cols = -c (cycle),
+               names_to = &quot;var&quot;,
+               values_to = &quot;Mean&quot;)
+
+pred.df.sd &lt;- pred_list %&gt;%
+  map (get_meanSD, func = mean) %&gt;%
+  bind_cols() %&gt;%
+  mutate (cycle = 1:101) %&gt;%
+  pivot_longer(cols = -c (cycle),
+               names_to = &quot;var&quot;,
+               values_to = &quot;Sd&quot;)
+
+pffr.df &lt;- pred.df.mean %&gt;%
+  inner_join(pred.df.sd, by = c(&quot;cycle&quot;, &quot;var&quot;)) %&gt;%
+  inner_join(obs.df, by = c(&quot;cycle&quot;, &quot;var&quot;)) %&gt;%
+  mutate (method = &quot;pffr&quot;)
+
+
+pffr.err &lt;- err_list %&gt;%
+  map (~ map (., mean)) %&gt;%
+  map (bind_cols) %&gt;%
+  bind_rows(.id = &quot;Outcomes&quot;) %&gt;%
+  mutate_if(is.numeric, round, 2) %&gt;%
+  mutate (`relRMSE(%)` = relRMSE * 100) %&gt;%
+  select (Outcomes, RMSE, `relRMSE(%)`, cor) %&gt;%
+  mutate (method = &quot;pffr&quot;)
+
+pffr.err$Outcomes &lt;- c(&quot;Ankle Inv(+)/Eve(-)&quot;,
+                       &quot;Ankle Df(+)/Pf(-)&quot;,
+                       &quot;Ankle Add(+)/Abd(-)&quot;,
+                       &quot;GRF AP&quot;,
+                       &quot;GRF ML&quot;,
+                       &quot;GRF VT&quot;,
+                       &quot;Hip Add(+)/Abd(-)&quot;,
+                       &quot;Hip F(+)/E(-)&quot;,
+                       &quot;Hip IR(+)/ER(-)&quot;,
+                       &quot;Knee Add(+)/Abd(-)&quot;,
+                       &quot;Knee E(+)/F(-)&quot;,
+                       &quot;Knee IR(+)/ER(-)&quot;)
+
+# Deep scratch -----------------------------------------------------------------
+
+###################### Import data ###########################################
+load (&quot;output/deep_data.RData&quot;)
+
+out_vars &lt;- dimnames(train_y_array)[[3]]
+out_axes_vars &lt;- dimnames(train_y_array)[[4]]
+
+# Load pretrained image model ---------------------------------------------------------------
+wid &lt;- 150
+ht &lt;- 150
+
+
+# Resize  input using cubic interpolation [5]
+
+train_x &lt;- resize(train_x_array, size_y = wid, size_z = ht, interpolation_type = 5) %&gt;% as.array()
+test_x &lt;- resize(test_x_array, size_y = wid, size_z = ht, interpolation_type = 5) %&gt;% as.array()
+
+
+pred_list &lt;- list()
+err_list &lt;- list()
+
+fileNames &lt;- list.files(&quot;output/&quot;, &quot;kerasScra&quot;)
+
+for (n in seq_along (fileNames)) {
+
+  input_path &lt;- file.path (&quot;output&quot;, fileNames[n])
+  model &lt;- load_model_hdf5(input_path)
+
+  pred_list[[n]] &lt;- model %&gt;% predict(test_x)
+
+}
+
+obs_list &lt;- list()
+for (out in out_vars) {
+
+  for (oaxes in out_axes_vars) {
+
+    outnames &lt;- paste0(out, &quot;_&quot;, oaxes)
+
+    obs_list[[outnames]] &lt;- test_y_array[,,out, oaxes]
+
+  }
+
+}
+
+for (n in seq_along (fileNames)) {
+
+  err_list[[n]] &lt;- all_measures(obs_list[[n]], pred_list[[n]])
+
+}
+
+# Plot and get error
+
+varNames &lt;- fileNames %&gt;%
+  str_remove(&quot;kerasScra_&quot;) %&gt;%
+  str_remove(&quot;.h5&quot;)
+
+names (obs_list) &lt;- names (pred_list) &lt;- varNames
+
+obs.df.mean &lt;- obs_list %&gt;%
+  map (get_meanSD, func = mean) %&gt;%
+  bind_cols() %&gt;%
+  mutate (cycle = 1:101) %&gt;%
+  pivot_longer(cols = -c (cycle),
+               names_to = &quot;var&quot;,
+               values_to = &quot;Mean&quot;)
+
+obs.df.sd &lt;- obs_list %&gt;%
+  map (get_meanSD, func = sd) %&gt;%
+  bind_cols() %&gt;%
+  mutate (cycle = 1:101) %&gt;%
+  pivot_longer(cols = -c (cycle),
+               names_to = &quot;var&quot;,
+               values_to = &quot;Sd&quot;)
+
+obs.df &lt;- obs.df.mean %&gt;%
+  inner_join(obs.df.sd, by = c(&quot;cycle&quot;, &quot;var&quot;))%&gt;%
+  rename (obs_Mean = Mean,
+          obs_Sd = Sd)
+
+
+pred.df.mean &lt;- pred_list %&gt;%
+  map (get_meanSD, func = mean) %&gt;%
+  bind_cols() %&gt;%
+  mutate (cycle = 1:101) %&gt;%
+  pivot_longer(cols = -c (cycle),
+               names_to = &quot;var&quot;,
+               values_to = &quot;Mean&quot;)
+
+pred.df.sd &lt;- pred_list %&gt;%
+  map (get_meanSD, func = mean) %&gt;%
+  bind_cols() %&gt;%
+  mutate (cycle = 1:101) %&gt;%
+  pivot_longer(cols = -c (cycle),
+               names_to = &quot;var&quot;,
+               values_to = &quot;Sd&quot;)
+
+cnn.df &lt;- pred.df.mean %&gt;%
+  inner_join(pred.df.sd, by = c(&quot;cycle&quot;, &quot;var&quot;)) %&gt;%
+  inner_join(obs.df, by = c(&quot;cycle&quot;, &quot;var&quot;)) %&gt;%
+  mutate (method = &quot;deep_scratch&quot;)
+
+
+cnn.err &lt;- err_list %&gt;%
+  map (~ map (., mean)) %&gt;%
+  map (bind_cols) %&gt;%
+  bind_rows(.id = &quot;Outcomes&quot;) %&gt;%
+  mutate_if(is.numeric, round, 2) %&gt;%
+  mutate (`relRMSE(%)` = relRMSE * 100) %&gt;%
+  select (Outcomes, RMSE, `relRMSE(%)`, cor) %&gt;%
+  mutate (method = &quot;deep_scratch&quot;)
+
+cnn.err$Outcomes &lt;- c(&quot;Ankle Inv(+)/Eve(-)&quot;,
+                      &quot;Ankle Df(+)/Pf(-)&quot;,
+                      &quot;Ankle Add(+)/Abd(-)&quot;,
+                      &quot;GRF AP&quot;,
+                      &quot;GRF ML&quot;,
+                      &quot;GRF VT&quot;,
+                      &quot;Hip Add(+)/Abd(-)&quot;,
+                      &quot;Hip F(+)/E(-)&quot;,
+                      &quot;Hip IR(+)/ER(-)&quot;,
+                      &quot;Knee Add(+)/Abd(-)&quot;,
+                      &quot;Knee E(+)/F(-)&quot;,
+                      &quot;Knee IR(+)/ER(-)&quot;)
+
+# Deep transfer -----------------------------------------------------------------
+
+###################### Import data ###########################################
+
+
+pred_list &lt;- list()
+err_list &lt;- list()
+
+fileNames &lt;- list.files(&quot;output/&quot;, &quot;kerasTL&quot;)
+
+for (n in seq_along (fileNames)) {
+
+  input_path &lt;- file.path (&quot;output&quot;, fileNames[n])
+  model &lt;- load_model_hdf5(input_path)
+
+  pred_list[[n]] &lt;- model %&gt;% predict(test_x)
+
+}
+
+obs_list &lt;- list()
+for (out in out_vars) {
+
+  for (oaxes in out_axes_vars) {
+
+    outnames &lt;- paste0(out, &quot;_&quot;, oaxes)
+
+    obs_list[[outnames]] &lt;- test_y_array[,,out, oaxes]
+
+  }
+
+}
+
+for (n in seq_along (fileNames)) {
+
+  err_list[[n]] &lt;- all_measures(obs_list[[n]], pred_list[[n]])
+
+}
+
+# Plot and get error
+
+varNames &lt;- fileNames %&gt;%
+  str_remove(&quot;kerasTL_&quot;) %&gt;%
+  str_remove(&quot;.h5&quot;)
+
+names (obs_list) &lt;- names (pred_list) &lt;- varNames
+
+obs.df.mean &lt;- obs_list %&gt;%
+  map (get_meanSD, func = mean) %&gt;%
+  bind_cols() %&gt;%
+  mutate (cycle = 1:101) %&gt;%
+  pivot_longer(cols = -c (cycle),
+               names_to = &quot;var&quot;,
+               values_to = &quot;Mean&quot;)
+
+obs.df.sd &lt;- obs_list %&gt;%
+  map (get_meanSD, func = sd) %&gt;%
+  bind_cols() %&gt;%
+  mutate (cycle = 1:101) %&gt;%
+  pivot_longer(cols = -c (cycle),
+               names_to = &quot;var&quot;,
+               values_to = &quot;Sd&quot;)
+
+obs.df &lt;- obs.df.mean %&gt;%
+  inner_join(obs.df.sd, by = c(&quot;cycle&quot;, &quot;var&quot;))%&gt;%
+  rename (obs_Mean = Mean,
+          obs_Sd = Sd)
+
+
+pred.df.mean &lt;- pred_list %&gt;%
+  map (get_meanSD, func = mean) %&gt;%
+  bind_cols() %&gt;%
+  mutate (cycle = 1:101) %&gt;%
+  pivot_longer(cols = -c (cycle),
+               names_to = &quot;var&quot;,
+               values_to = &quot;Mean&quot;)
+
+pred.df.sd &lt;- pred_list %&gt;%
+  map (get_meanSD, func = mean) %&gt;%
+  bind_cols() %&gt;%
+  mutate (cycle = 1:101) %&gt;%
+  pivot_longer(cols = -c (cycle),
+               names_to = &quot;var&quot;,
+               values_to = &quot;Sd&quot;)
+
+TL.df &lt;- pred.df.mean %&gt;%
+  inner_join(pred.df.sd, by = c(&quot;cycle&quot;, &quot;var&quot;)) %&gt;%
+  inner_join(obs.df, by = c(&quot;cycle&quot;, &quot;var&quot;)) %&gt;%
+  mutate (method = &quot;deep_TL&quot;)
+
+
+TL.err &lt;- err_list %&gt;%
+  map (~ map (., mean)) %&gt;%
+  map (bind_cols) %&gt;%
+  bind_rows(.id = &quot;Outcomes&quot;) %&gt;%
+  mutate_if(is.numeric, round, 2) %&gt;%
+  mutate (`relRMSE(%)` = relRMSE * 100) %&gt;%
+  select (Outcomes, RMSE, `relRMSE(%)`, cor) %&gt;%
+  mutate (method = &quot;deep_TL&quot;)
+
+TL.err$Outcomes &lt;-c(&quot;Ankle Inv(+)/Eve(-)&quot;,
+                    &quot;Ankle Df(+)/Pf(-)&quot;,
+                    &quot;Ankle Add(+)/Abd(-)&quot;,
+                    &quot;GRF AP&quot;,
+                    &quot;GRF ML&quot;,
+                    &quot;GRF VT&quot;,
+                    &quot;Hip Add(+)/Abd(-)&quot;,
+                    &quot;Hip F(+)/E(-)&quot;,
+                    &quot;Hip IR(+)/ER(-)&quot;,
+                    &quot;Knee Add(+)/Abd(-)&quot;,
+                    &quot;Knee E(+)/F(-)&quot;,
+                    &quot;Knee IR(+)/ER(-)&quot;)
+
+df.plot &lt;- bind_rows(pffr.df,
+                     cnn.df,
+                     TL.df) %&gt;%
+  mutate (var = factor (var, levels = varLvls, labels = yNewNames),
+          Method = method) %&gt;%
+  filter (!grepl (&quot;GRF&quot;, var)) %&gt;%
+  select (-method)
+
+err.df &lt;- bind_rows(pffr.err,
+                    cnn.err,
+                    TL.err) %&gt;%
+  mutate (Outcomes = factor (Outcomes, levels = yNewNames),
+          Method = factor (method, levels = c(&quot;pffr&quot;, &quot;deep_scratch&quot;, &quot;deep_TL&quot;))) %&gt;%
+  arrange (Outcomes, Method) %&gt;%
+  filter (!grepl (&quot;GRF&quot;, Outcomes)) %&gt;%
+  select (Outcomes, Method,  everything(), -method)
+
+saveRDS(list (df.plot = df.plot,
+              err.df = err.df),
+        &quot;output/prediction_results.RDS&quot;)</code></pre>
+</div>
+<div id="plots" class="section level2">
+<h2>Plots</h2>
+<pre class="r"><code>df.plot &lt;- results$df.plot
+
+temp1 &lt;- df.plot %&gt;%
+  select (cycle, var, obs_Mean, obs_Sd) %&gt;%
+  rename (Mean = obs_Mean,
+          Sd = obs_Sd) %&gt;%
+  mutate (Method = &quot;obs&quot;)
+
+df.plot &lt;- df.plot %&gt;%
+  select (!matches (&quot;obs&quot;)) %&gt;%
+  bind_rows(temp1) %&gt;%
+  mutate (Method = factor (Method, levels = c(&quot;obs&quot;, &quot;pffr&quot;, &quot;deep_scratch&quot;, &quot;deep_TL&quot;)))
+
+
+p &lt;- ggplot (df.plot) +
+  geom_line(aes(x = cycle, y = Mean, colour = Method), size = 1) +
+   #geom_ribbon(aes(x = cycle, ymin = Mean - Sd, ymax = Mean + Sd, fill = method), alpha = 0.1) +
+  facet_wrap(~ var, scales = &quot;free&quot;, ncol = 3) +
+  scale_color_manual(values = c(&quot;black&quot;, &quot;red&quot;, &quot;blue&quot;, &quot;green&quot;)) +
+  scale_fill_manual(values = c(&quot;black&quot;, &quot;red&quot;, &quot;blue&quot;, &quot;green&quot;)) +
+  guides(fill = &quot;none&quot;) +
+  ylab (&quot;Joint moment (Nm/kg)&quot;) +
+  xlab (&quot;Stance phase (100%)&quot;) +
+  theme_cowplot() +
+  theme (text = element_text(size=16))
+
+p</code></pre>
+<p><img src="figure/code_for_publish.Rmd/unnamed-chunk-10-1.png" width="1152" style="display: block; margin: auto;" /></p>
+</div>
+<div id="table" class="section level2">
+<h2>Table</h2>
+<pre class="r"><code>err.df &lt;- results$err.df
+
+err.df %&gt;%
+  kableExtra::kable() %&gt;%
+  kableExtra::kable_styling ()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Outcomes
+</th>
+<th style="text-align:left;">
+Method
+</th>
+<th style="text-align:right;">
+RMSE
+</th>
+<th style="text-align:right;">
+relRMSE(%)
+</th>
+<th style="text-align:right;">
+cor
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Ankle Inv(+)/Eve(-)
+</td>
+<td style="text-align:left;">
+pffr
+</td>
+<td style="text-align:right;">
+0.19
+</td>
+<td style="text-align:right;">
+29
+</td>
+<td style="text-align:right;">
+0.92
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ankle Inv(+)/Eve(-)
+</td>
+<td style="text-align:left;">
+deep_scratch
+</td>
+<td style="text-align:right;">
+0.07
+</td>
+<td style="text-align:right;">
+13
+</td>
+<td style="text-align:right;">
+0.98
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ankle Inv(+)/Eve(-)
+</td>
+<td style="text-align:left;">
+deep_TL
+</td>
+<td style="text-align:right;">
+0.10
+</td>
+<td style="text-align:right;">
+17
+</td>
+<td style="text-align:right;">
+0.96
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ankle Df(+)/Pf(-)
+</td>
+<td style="text-align:left;">
+pffr
+</td>
+<td style="text-align:right;">
+0.54
+</td>
+<td style="text-align:right;">
+19
+</td>
+<td style="text-align:right;">
+0.95
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ankle Df(+)/Pf(-)
+</td>
+<td style="text-align:left;">
+deep_scratch
+</td>
+<td style="text-align:right;">
+0.16
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ankle Df(+)/Pf(-)
+</td>
+<td style="text-align:left;">
+deep_TL
+</td>
+<td style="text-align:right;">
+0.22
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+0.99
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ankle Add(+)/Abd(-)
+</td>
+<td style="text-align:left;">
+pffr
+</td>
+<td style="text-align:right;">
+0.16
+</td>
+<td style="text-align:right;">
+57
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ankle Add(+)/Abd(-)
+</td>
+<td style="text-align:left;">
+deep_scratch
+</td>
+<td style="text-align:right;">
+0.06
+</td>
+<td style="text-align:right;">
+37
+</td>
+<td style="text-align:right;">
+0.64
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ankle Add(+)/Abd(-)
+</td>
+<td style="text-align:left;">
+deep_TL
+</td>
+<td style="text-align:right;">
+0.07
+</td>
+<td style="text-align:right;">
+41
+</td>
+<td style="text-align:right;">
+0.52
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Knee Add(+)/Abd(-)
+</td>
+<td style="text-align:left;">
+pffr
+</td>
+<td style="text-align:right;">
+0.19
+</td>
+<td style="text-align:right;">
+29
+</td>
+<td style="text-align:right;">
+0.79
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Knee Add(+)/Abd(-)
+</td>
+<td style="text-align:left;">
+deep_scratch
+</td>
+<td style="text-align:right;">
+0.14
+</td>
+<td style="text-align:right;">
+22
+</td>
+<td style="text-align:right;">
+0.86
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Knee Add(+)/Abd(-)
+</td>
+<td style="text-align:left;">
+deep_TL
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+31
+</td>
+<td style="text-align:right;">
+0.71
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Knee E(+)/F(-)
+</td>
+<td style="text-align:left;">
+pffr
+</td>
+<td style="text-align:right;">
+0.49
+</td>
+<td style="text-align:right;">
+13
+</td>
+<td style="text-align:right;">
+0.98
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Knee E(+)/F(-)
+</td>
+<td style="text-align:left;">
+deep_scratch
+</td>
+<td style="text-align:right;">
+0.25
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+0.99
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Knee E(+)/F(-)
+</td>
+<td style="text-align:left;">
+deep_TL
+</td>
+<td style="text-align:right;">
+0.28
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+0.99
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Knee IR(+)/ER(-)
+</td>
+<td style="text-align:left;">
+pffr
+</td>
+<td style="text-align:right;">
+0.19
+</td>
+<td style="text-align:right;">
+38
+</td>
+<td style="text-align:right;">
+0.78
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Knee IR(+)/ER(-)
+</td>
+<td style="text-align:left;">
+deep_scratch
+</td>
+<td style="text-align:right;">
+0.08
+</td>
+<td style="text-align:right;">
+19
+</td>
+<td style="text-align:right;">
+0.96
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Knee IR(+)/ER(-)
+</td>
+<td style="text-align:left;">
+deep_TL
+</td>
+<td style="text-align:right;">
+0.09
+</td>
+<td style="text-align:right;">
+21
+</td>
+<td style="text-align:right;">
+0.96
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Hip Add(+)/Abd(-)
+</td>
+<td style="text-align:left;">
+pffr
+</td>
+<td style="text-align:right;">
+0.34
+</td>
+<td style="text-align:right;">
+17
+</td>
+<td style="text-align:right;">
+0.97
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Hip Add(+)/Abd(-)
+</td>
+<td style="text-align:left;">
+deep_scratch
+</td>
+<td style="text-align:right;">
+0.19
+</td>
+<td style="text-align:right;">
+9
+</td>
+<td style="text-align:right;">
+0.99
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Hip Add(+)/Abd(-)
+</td>
+<td style="text-align:left;">
+deep_TL
+</td>
+<td style="text-align:right;">
+0.24
+</td>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:right;">
+0.99
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Hip F(+)/E(-)
+</td>
+<td style="text-align:left;">
+pffr
+</td>
+<td style="text-align:right;">
+0.43
+</td>
+<td style="text-align:right;">
+20
+</td>
+<td style="text-align:right;">
+0.91
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Hip F(+)/E(-)
+</td>
+<td style="text-align:left;">
+deep_scratch
+</td>
+<td style="text-align:right;">
+0.24
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+0.96
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Hip F(+)/E(-)
+</td>
+<td style="text-align:left;">
+deep_TL
+</td>
+<td style="text-align:right;">
+0.31
+</td>
+<td style="text-align:right;">
+16
+</td>
+<td style="text-align:right;">
+0.94
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Hip IR(+)/ER(-)
+</td>
+<td style="text-align:left;">
+pffr
+</td>
+<td style="text-align:right;">
+0.23
+</td>
+<td style="text-align:right;">
+25
+</td>
+<td style="text-align:right;">
+0.90
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Hip IR(+)/ER(-)
+</td>
+<td style="text-align:left;">
+deep_scratch
+</td>
+<td style="text-align:right;">
+0.10
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+0.97
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Hip IR(+)/ER(-)
+</td>
+<td style="text-align:left;">
+deep_TL
+</td>
+<td style="text-align:right;">
+0.12
+</td>
+<td style="text-align:right;">
+15
+</td>
+<td style="text-align:right;">
+0.97
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.0.2 (2020-06-22)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 10 x64 (build 19041)
+
+Matrix products: default
+
+locale:
+[1] LC_COLLATE=English_United Kingdom.1252 
+[2] LC_CTYPE=English_United Kingdom.1252   
+[3] LC_MONETARY=English_United Kingdom.1252
+[4] LC_NUMERIC=C                           
+[5] LC_TIME=English_United Kingdom.1252    
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] qwraps2_0.5.0     flextable_0.6.1   officer_0.3.16    ggpubr_0.4.0     
+ [5] cowplot_1.1.1     doParallel_1.0.16 iterators_1.0.13  foreach_1.5.1    
+ [9] imager_0.42.3     magrittr_2.0.1    tensorflow_2.2.0  keras_2.3.0.0    
+[13] refund_0.1-23     forcats_0.5.0     stringr_1.4.0     dplyr_1.0.2      
+[17] purrr_0.3.4       readr_1.4.0       tidyr_1.1.2       tibble_3.0.4     
+[21] ggplot2_3.3.3     tidyverse_1.3.0  
+
+loaded via a namespace (and not attached):
+  [1] readxl_1.3.1         uuid_0.1-4           backports_1.2.1     
+  [4] grpreg_3.3.0         workflowr_1.6.2      systemfonts_0.3.2   
+  [7] igraph_1.2.6         splines_4.0.2        RLRsim_3.1-6        
+ [10] fda_5.1.9            tfruns_1.4           digest_0.6.27       
+ [13] htmltools_0.5.0      tiff_0.1-6           fansi_0.4.1         
+ [16] cluster_2.1.0        ks_1.11.7            hdrcde_3.3          
+ [19] openxlsx_4.2.3       modelr_0.1.8         fds_1.8             
+ [22] jpeg_0.1-8.1         colorspace_2.0-0     rvest_0.3.6         
+ [25] haven_2.3.1          xfun_0.20            crayon_1.3.4        
+ [28] RCurl_1.98-1.2       jsonlite_1.7.2       lme4_1.1-26         
+ [31] zeallot_0.1.0        glue_1.4.2           kableExtra_1.3.1    
+ [34] gtable_0.3.0         webshot_0.5.2        car_3.0-10          
+ [37] abind_1.4-5          scales_1.1.1         mvtnorm_1.1-1       
+ [40] DBI_1.1.0            rstatix_0.6.0        Rcpp_1.0.6          
+ [43] pbs_1.1              viridisLite_0.3.0    magic_1.5-9         
+ [46] reticulate_1.18-9006 foreign_0.8-81       mclust_5.4.7        
+ [49] httr_1.4.2           ellipsis_0.3.1       rainbow_3.6         
+ [52] farver_2.0.3         pkgconfig_2.0.3      dbplyr_2.0.0        
+ [55] labeling_0.4.2       tidyselect_1.1.0     rlang_0.4.10        
+ [58] later_1.1.0.1        munsell_0.5.0        cellranger_1.1.0    
+ [61] tools_4.0.2          cli_2.2.0            generics_0.1.0      
+ [64] broom_0.7.4.9000     evaluate_0.14        yaml_2.2.1          
+ [67] knitr_1.30           fs_1.5.0             zip_2.1.1           
+ [70] readbitmap_0.1.5     nlme_3.1-151         whisker_0.4         
+ [73] xml2_1.3.2           compiler_4.0.2       rstudioapi_0.13     
+ [76] gamm4_0.2-6          curl_4.3             png_0.1-7           
+ [79] ggsignif_0.6.0       reprex_0.3.0         statmod_1.4.35      
+ [82] pcaPP_1.9-73         stringi_1.5.3        highr_0.8           
+ [85] gdtools_0.2.3        lattice_0.20-41      Matrix_1.2-18       
+ [88] nloptr_1.2.2.2       vctrs_0.3.6          pillar_1.4.7        
+ [91] lifecycle_0.2.0      data.table_1.14.0    bitops_1.0-6        
+ [94] httpuv_1.5.4         R6_2.5.0             promises_1.1.1      
+ [97] KernSmooth_2.23-18   bmp_0.3              rio_0.5.16          
+[100] codetools_0.2-18     boot_1.3-25          MASS_7.3-53         
+[103] assertthat_0.2.1     rprojroot_2.0.2      withr_2.3.0         
+[106] mgcv_1.8-33          hms_0.5.3            grid_4.0.2          
+[109] minqa_1.2.4          rmarkdown_2.6        carData_3.0-4       
+[112] git2r_0.27.1         lubridate_1.7.9.2    base64enc_0.1-3     </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

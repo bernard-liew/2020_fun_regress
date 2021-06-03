@@ -1,0 +1,900 @@
+---
+title: "code_for_publish"
+author: "Bernard"
+date: "2021-06-03"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# Load packages
+
+```{r}
+#Load packages------------------------------------------------------------
+# helper
+library(tidyverse)
+
+# modelling
+library (refund)
+library (keras)
+library(tensorflow)
+
+# image
+library (imager)
+
+# parallel
+library (doParallel)
+library (foreach)
+
+# plotting
+library (cowplot)
+library (ggpubr)
+
+# Tables
+library (officer)
+library (flextable)
+library (qwraps2)
+
+# Custom measures
+source("code/measures_johnson.R")
+source("code/helper_func.R")
+```
+
+# Machine learning
+
+## Functional regression
+
+```{r, eval = FALSE}
+# Split data---------------------------------------------------------------
+
+train <- readRDS("output/train_data.RDS")
+test <- readRDS("output/test_data.RDS")
+
+# Get variables---------------------------------------------------------------
+
+response_vars <- names(train)[grep("grf|hip_moment|knee_moment|ankle_moment", names(train))]
+pred_vars <- names(train)[grep("angle|vel|accl", names(train))]
+
+
+# Modelling---------------------------------------------------------------
+
+
+for (n in seq_along(response_vars)) {
+
+  response <- response_vars[n]
+
+  # Create formula
+  form <- paste(response, " ~ 1 + ", paste(
+    paste("sff(", pred_vars,
+          ", yind=cycle, xind=cycle)"),
+    collapse = " + ")
+    )
+
+  # initialize the model
+  m <- pffr(as.formula(form),
+            yind = cycle,
+            algorithm = "bam",
+            data = train)
+
+
+  # plot(m)
+
+  # Save model and predictions
+
+  saveRDS(m, file = file.path ("output", paste0("ModelFx_",response,".RDS")))
+
+  pp <- predict(m, newdata = test[-which(names(test)=="cycle")])
+
+  saveRDS(pp, file = file.path ("output", paste0("PredictionFx_",response,".RDS")))
+
+  measures <- all_measures(test[[response]], pp)
+
+  saveRDS(measures, file = file.path ("output", paste0("MeasuresFx_",response,".RDS")))
+
+  rm(m)
+  gc()
+
+}
+```
+
+## CNN scratch
+
+```{r, eval = FALSE}
+
+# set python environment
+use_condaenv("tf-gpu")
+
+# Load data---------------------------------------------------------------
+
+load ("output/deep_data.RData")
+
+out_vars <- dimnames(train_y_array)[[3]]
+out_axes_vars <- dimnames(train_y_array)[[4]]
+
+# Load pretrained image model ---------------------------------------------------------------
+wid <- 150
+ht <- 150
+
+
+# Resize  input using cubic interpolation [5]
+
+train_x <- resize(train_x_array, size_y = wid, size_z = ht, interpolation_type = 5) %>% as.array()
+test_x <- resize(test_x_array, size_y = wid, size_z = ht, interpolation_type = 5) %>% as.array()
+
+# Split train set into validate and train, as needed modelling
+
+set.seed (2839)
+val_id <- sample (unique (dimnames(train_x_array)[[1]]), size = 10)
+val_id <- dimnames(train_x_array)[[1]] %in% val_id
+
+val_x <- train_x[val_id,,,]
+train_x <- train_x[!val_id,,,]
+
+# Create model --------------------------------------------------------------
+
+cnn1 <- cnn_block(filters = 32, kernel_size = c(3,3), pool_size = c(3,3), rate = 0.25,
+                  shape(wid, ht, 3))
+cnn2 <- cnn_block(filters = 64, kernel_size = c(3,3), pool_size = c(2,2), rate = 0.25)
+cnn3 <- cnn_block(filters = 128, kernel_size = c(3,3), pool_size = c(2,2), rate = 0.25)
+cnn4 <- cnn_block(filters = 64, kernel_size = c(3,3), pool_size = c(2,2), rate = 0.25)
+
+for (out in out_vars) {
+
+  for (oaxes in out_axes_vars) {
+
+    # Select outcomes ---------------------------------------------------------
+    train_y <- train_y_array[!val_id,,out, oaxes]
+    val_y <- train_y_array[val_id,,out, oaxes]
+    test_y <- test_y_array[,,out, oaxes]
+
+    # Create model --------------------------------------------------------------
+
+    model <- keras_model_sequential() %>%
+      cnn1() %>%
+      cnn2() %>%
+      cnn3() %>%
+      #cnn4() %>%
+      # branch end
+      layer_flatten() %>%
+      layer_dense(256) %>%
+      layer_activation(activation = "relu") %>%
+      layer_batch_normalization() %>%
+      layer_dropout(rate = 0.5) %>%
+      layer_dense(101)
+
+
+    model %>% compile(
+      optimizer = "rmsprop",
+      #optimizer = optimizer_adam(lr = 0.0001),
+      loss = "mse",
+      metrics = c("mae")
+    )
+
+
+    history <- model %>% fit(
+      train_x, train_y,
+      epochs = 200,
+      batch_size = 16,
+      validation_data = list(val_x, val_y),
+      callbacks =   list(
+        callback_learning_rate_scheduler(
+          tf$keras$experimental$CosineDecayRestarts(.02, 10, t_mul = 2, m_mul = .7)
+        )
+      )
+    )
+
+    output_path <- file.path ("output", paste0("kerasScra_", out, "_",oaxes, ".h5"))
+
+    save_model_hdf5(model, output_path)
+
+  }
+
+}
+
+```
+
+## CNN Transfer learning
+
+```{r, eval = FALSE}
+conv_base <- application_vgg16(weights = 'imagenet', include_top = FALSE, input_shape = c(wid,ht,3))
+
+# Resize  input using cubic interpolation [5]
+
+train_x <- resize(train_x_array, size_y = wid, size_z = ht, interpolation_type = 5) %>% as.array()
+test_x <- resize(test_x_array, size_y = wid, size_z = ht, interpolation_type = 5) %>% as.array()
+
+# Split train set into validate and train, as needed modelling
+set.seed (2839)
+val_id <- sample (unique (dimnames(train_x_array)[[1]]), size = 10)
+val_id <- dimnames(train_x_array)[[1]] %in% val_id
+
+val_x <- train_x[val_id,,,]
+train_x <- train_x[!val_id,,,]
+
+for (out in out_vars) {
+
+  for (oaxes in out_axes_vars) {
+
+    # Select outcomes ---------------------------------------------------------
+    train_y <- train_y_array[!val_id,,out, oaxes]
+    val_y <- train_y_array[val_id,,out, oaxes]
+    test_y <- test_y_array[,,out, oaxes]
+
+    # Create model ------------------------------------------------------------
+    model <- keras_model_sequential() %>%
+      conv_base %>%
+      layer_flatten() %>%
+      layer_dense (units = 256, activation = "relu") %>%
+      layer_activation(activation = "relu") %>%
+      layer_batch_normalization() %>%
+      layer_dropout(rate = 0.5) %>%
+      layer_dense (units = 101, activation = "linear")
+
+    # Consider freezing bottom weights to prevent overfit
+    freeze_weights(conv_base)
+
+    # run model ------------------------------------------------------------
+    model %>% compile(
+      optimizer = "rmsprop",
+      #optimizer = optimizer_adam(lr = 0.0001),
+      loss = "mse",
+      metrics = c("mae")
+    )
+
+    history <- model %>% fit(
+      train_x, train_y,
+      epochs = 200,
+      batch_size = 16,
+      validation_data = list(val_x, val_y),
+      callbacks =   list(
+        callback_learning_rate_scheduler(
+          tf$keras$experimental$CosineDecayRestarts(.02, 10, t_mul = 2, m_mul = .7)
+        )
+      )
+    )
+
+    output_path <- file.path ("output", paste0("kerasTL_", out, "_",oaxes, ".h5"))
+
+    save_model_hdf5(model, output_path)
+
+  }
+
+}
+```
+
+# Descriptives
+
+## Tables
+
+```{r}
+
+df <- readRDS("output/data_4sets.RDS")
+
+## -------------------------------------------------------------------------------------
+
+## CHECK: df$cycle has time point 43 at the end??
+cycle <- 1:101
+
+rm_obs <- which (df$cond == "(.10)50")
+
+df <- df %>%
+  map_if (is.matrix, ~.[-rm_obs,]) %>%
+  map_if (is.vector, ~.[-rm_obs])
+
+
+df$cond[df$cond == "runt30"] <- "runt35"
+
+df_mean <- df[-which(names(df)=="cycle")] %>% lapply(., function(x){
+
+  ret <- aggregate(as.data.frame(x), by = list(df$subj, df$cond),
+                   FUN = function(x) if(is.numeric(x)) mean(x) else x[1])[,-1*(1:2)]
+  if(NCOL(ret)>1)
+    ret <- as.matrix(ret)
+  return(ret)
+
+})
+
+df_mean$cycle <- cycle
+names(df_mean)[1] <- "id"
+df_mean$study <- as.factor(gsub("(.*)_(.*)","\\1",df_mean$id))
+
+df_id_study <- df_mean[c("id","study")] %>%
+  as.data.frame()%>%
+  mutate (id = factor (id))
+
+
+df_demo <- df_mean [1:8] %>%
+  bind_cols() %>%
+  mutate (study = ifelse (grepl("fukuchi", id), "fukuchi",
+                          ifelse (grepl ("study1", id), "study1",
+                                  ifelse (grepl ("study2_pre", id), "study2pre", "study2post")))) %>%
+  distinct(study, id, age, ht, wt, sex)
+
+
+study_id <- df_demo %>%
+  #distinct (study, id) %>%
+  group_by (study, id) %>%
+  tally ()
+
+
+
+our_summary1 <-
+  list("Age (yo)" =
+         list("mean (sd)" = ~ qwraps2::mean_sd(age, denote_sd = "paren")),
+       "Height (m)" =
+         list("mean (sd)" = ~ qwraps2::mean_sd(ht, denote_sd = "paren")),
+       "Mass (kg)" =
+         list("mean (sd)" = ~ qwraps2::mean_sd(wt, denote_sd = "paren")),
+       "Sex" =
+         list("Female" = ~ qwraps2::n_perc0(sex == "f"),
+              "Male"  = ~ qwraps2::n_perc0(sex == "m"))
+       )
+
+by_cyl <- summary_table(df_demo %>%
+                          group_by(study), our_summary1) %>%
+  as.data.frame()
+
+by_cyl$Variables <-  c("Age (years)",
+                       "Height (m)",
+                       "Mass (kg)",
+                       "Sex-F",
+                       "Sex-M")
+
+by_cyl <- dplyr::select (by_cyl, Variables, everything ())
+
+by_cyl %>%
+  kableExtra::kable(row.names = FALSE)  %>%
+  kableExtra::kable_styling ()
+```
+
+```{r, eval = FALSE, include = FALSE}
+my_path <- paste0("manuscript/table_1",
+                  "summary",
+                  ".docx")
+
+ft <- flextable(by_cyl ) %>%
+  autofit()
+
+my_doc <- read_docx()  %>%
+  body_add_flextable(ft) %>%
+  body_end_section_landscape()
+
+print (my_doc, target = my_path)
+```
+
+
+## Biomechanical variable plots
+
+```{r fig.height=30, fig.width=12}
+# Plot
+
+var_plot <- grepl ("ankle|knee|hip", names (df_mean))
+
+df_plot_mean <- df_mean [var_plot] %>%
+  map (~apply (.x, 2, mean)) %>%
+  bind_cols() %>%
+  mutate (cycle = 1:101) %>%
+  pivot_longer(cols = -cycle,
+               names_to = "var",
+               values_to = "Mean")
+
+df_plot_sd <- df_mean [var_plot] %>%
+  map (~apply (.x, 2, sd)) %>%
+  bind_cols() %>%
+  mutate (cycle = 1:101) %>%
+  pivot_longer(cols = -cycle,
+               names_to = "var",
+               values_to = "Sd")
+
+df_plot <- df_plot_mean %>%
+  inner_join(df_plot_sd, by = c("cycle", "var"))
+
+# Relvel and rename
+
+newLvls <- c("ankle_angle_ap", "ankle_angle_ml",  "ankle_angle_vt",
+             "ankle_vel_ap",    "ankle_vel_ml",    "ankle_vel_vt",
+             "ankle_accl_ap","ankle_accl_ml","ankle_accl_vt",
+             "ankle_moment_ap", "ankle_moment_ml", "ankle_moment_vt",
+             # knee
+             "knee_angle_ap", "knee_angle_ml",  "knee_angle_vt",
+             "knee_vel_ap",    "knee_vel_ml",    "knee_vel_vt",
+             "knee_accl_ap","knee_accl_ml","knee_accl_vt",
+             "knee_moment_ap", "knee_moment_ml", "knee_moment_vt",
+             # hip
+             "hip_angle_ap", "hip_angle_ml",  "hip_angle_vt",
+             "hip_vel_ap",    "hip_vel_ml",    "hip_vel_vt",
+             "hip_accl_ap","hip_accl_ml","hip_accl_vt",
+             "hip_moment_ap", "hip_moment_ml", "hip_moment_vt")
+
+newLbls <- c("Ankle Inv(+)/Eve(-) angle (deg)", "Ankle DF(+)/PF(-) angle (deg)",  "Ankle Add(+)/Abd(-) angle (deg)",
+             "Ankle Inv(+)/Eve(-) vel (deg/s)", "Ankle DF(+)/PF(-) vel (deg/s)",  "Ankle Add(+)/Abd(-) vel (deg/s)",
+             "Ankle Inv(+)/Eve(-) acc (deg/s2)", "Ankle DF(+)/PF(-) acc (deg/s2)",  "Ankle Add(+)/Abd(-) acc (deg/s2)",
+             "Ankle Inv(+)/Eve(-) moment (Nm/kg)", "Ankle DF(+)/PF(-) moment (Nm/kg)",  "Ankle Add(+)/Abd(-) moment (Nm/kg)",
+             # Knee
+             "Knee Inv(+)/Eve(-) angle (deg)", "Knee DF(+)/PF(-) angle (deg)",  "Knee Add(+)/Abd(-) angle (deg)",
+             "Knee Inv(+)/Eve(-) vel (deg/s)", "Knee DF(+)/PF(-) vel (deg/s)",  "Knee Add(+)/Abd(-) vel (deg/s)",
+             "Knee Inv(+)/Eve(-) acc (deg/s2)", "Knee DF(+)/PF(-) acc (deg/s2)",  "Knee Add(+)/Abd(-) acc (deg/s2)",
+             "Knee Inv(+)/Eve(-) moment (Nm/kg)", "Knee DF(+)/PF(-) moment (Nm/kg)",  "Knee Add(+)/Abd(-) moment (Nm/kg)",
+             # hip
+             "Hip Inv(+)/Eve(-) angle (deg)", "Hip DF(+)/PF(-) angle (deg)",  "Hip Add(+)/Abd(-) angle (deg)",
+             "Hip Inv(+)/Eve(-) vel (deg/s)", "Hip DF(+)/PF(-) vel (deg/s)",  "Hip Add(+)/Abd(-) vel (deg/s)",
+             "Hip Inv(+)/Eve(-) acc (deg/s2)", "Hip DF(+)/PF(-) acc (deg/s2)",  "Hip Add(+)/Abd(-) acc (deg/s2)",
+             "Hip Inv(+)/Eve(-) moment (Nm/kg)", "Hip DF(+)/PF(-) moment (Nm/kg)",  "Hip Add(+)/Abd(-) moment (Nm/kg)")
+
+p <- df_plot %>%
+  mutate (var = factor (var, levels = newLvls, labels = newLbls)) %>%
+  ggplot () +
+  geom_line(aes(x = cycle, y = Mean), size = 1) +
+  geom_ribbon(aes(x = cycle, ymin = Mean - Sd, ymax = Mean + Sd), alpha = 0.2) +
+  facet_wrap(~ var, ncol = 3, scales = "free") +
+  ylab ("Variables") +
+  xlab ("Cycle (100%)") +
+  theme_cowplot() +
+  theme (text = element_text(size=16))
+
+p
+```
+
+# Results of machine learning
+
+## Prediction on test set
+
+```{r, eval = FALSE}
+
+# Create labels for plots
+ynames <- c("AP ankle (Nm/kg)",
+            "ML ankle (Nm/kg)",
+            "Vt ankle (Nm/kg)",
+            "AP GRF (N/kg)",
+            "ML GRF (N/kg)",
+            "Vt GRF (N/kg)",
+            "AP hip (Nm/kg)",
+            "ML hip (Nm/kg)",
+            "Vt hip (Nm/kg)",
+            "AP knee (Nm/kg)",
+            "ML knee (Nm/kg)",
+            "Vt knee (Nm/kg)")
+
+varLvls <- c("ankle_moment_ap",
+             "ankle_moment_ml",
+             "ankle_moment_vt",
+             "knee_moment_ap",
+             "knee_moment_ml",
+             "knee_moment_vt",
+             "hip_moment_ap",
+             "hip_moment_ml",
+             "hip_moment_vt",
+             "com_grf_ap",
+             "com_grf_ml",
+             "com_grf_vt")
+
+yNewNames <- c("Ankle Inv(+)/Eve(-)",
+               "Ankle Df(+)/Pf(-)",
+               "Ankle Add(+)/Abd(-)",
+               "Knee Add(+)/Abd(-)",
+               "Knee E(+)/F(-)",
+               "Knee IR(+)/ER(-)",
+               "Hip Add(+)/Abd(-)",
+               "Hip F(+)/E(-)",
+               "Hip IR(+)/ER(-)",
+               "GRF AP",
+               "GRF ML",
+               "GRF VT")
+
+# PFFR -------------------------------------------------------------------------
+train <- readRDS("output/train_data.RDS")
+test <- readRDS("output/test_data.RDS")
+
+response_vars <- names(train)[grep("grf|hip_moment|knee_moment|ankle_moment", names(train))]
+pred_vars <- names(train)[grep("angle|vel|accl", names(train))]
+
+# Load models
+
+pred_list <- list()
+err_list <- list()
+
+for(n in seq_along (response_vars)){
+
+  pred_list[[n]] <- readRDS(file.path ("output", paste0("PredictionFx_",response_vars[n],".RDS")))
+  err_list[[n]] <- readRDS(file.path ("output", paste0("MeasuresFx_",response_vars[n],".RDS")))
+
+}
+
+# Plot and get error
+
+names (pred_list) <- response_vars
+names (err_list) <- response_vars
+
+obs.df.mean <- test[response_vars] %>%
+  map (get_meanSD, func = mean) %>%
+  bind_cols() %>%
+  mutate (cycle = 1:101) %>%
+  pivot_longer(cols = -c (cycle),
+               names_to = "var",
+               values_to = "Mean")
+
+obs.df.sd <- test[response_vars] %>%
+  map (get_meanSD, func = sd) %>%
+  bind_cols() %>%
+  mutate (cycle = 1:101) %>%
+  pivot_longer(cols = -c (cycle),
+               names_to = "var",
+               values_to = "Sd")
+
+obs.df <- obs.df.mean %>%
+  inner_join(obs.df.sd, by = c("cycle", "var")) %>%
+  rename (obs_Mean = Mean,
+          obs_Sd = Sd)
+
+
+pred.df.mean <- pred_list %>%
+  map (get_meanSD, func = mean) %>%
+  bind_cols() %>%
+  mutate (cycle = 1:101) %>%
+  pivot_longer(cols = -c (cycle),
+               names_to = "var",
+               values_to = "Mean")
+
+pred.df.sd <- pred_list %>%
+  map (get_meanSD, func = mean) %>%
+  bind_cols() %>%
+  mutate (cycle = 1:101) %>%
+  pivot_longer(cols = -c (cycle),
+               names_to = "var",
+               values_to = "Sd")
+
+pffr.df <- pred.df.mean %>%
+  inner_join(pred.df.sd, by = c("cycle", "var")) %>%
+  inner_join(obs.df, by = c("cycle", "var")) %>%
+  mutate (method = "pffr")
+
+
+pffr.err <- err_list %>%
+  map (~ map (., mean)) %>%
+  map (bind_cols) %>%
+  bind_rows(.id = "Outcomes") %>%
+  mutate_if(is.numeric, round, 2) %>%
+  mutate (`relRMSE(%)` = relRMSE * 100) %>%
+  select (Outcomes, RMSE, `relRMSE(%)`, cor) %>%
+  mutate (method = "pffr")
+
+pffr.err$Outcomes <- c("Ankle Inv(+)/Eve(-)",
+                       "Ankle Df(+)/Pf(-)",
+                       "Ankle Add(+)/Abd(-)",
+                       "GRF AP",
+                       "GRF ML",
+                       "GRF VT",
+                       "Hip Add(+)/Abd(-)",
+                       "Hip F(+)/E(-)",
+                       "Hip IR(+)/ER(-)",
+                       "Knee Add(+)/Abd(-)",
+                       "Knee E(+)/F(-)",
+                       "Knee IR(+)/ER(-)")
+
+# Deep scratch -----------------------------------------------------------------
+
+###################### Import data ###########################################
+load ("output/deep_data.RData")
+
+out_vars <- dimnames(train_y_array)[[3]]
+out_axes_vars <- dimnames(train_y_array)[[4]]
+
+# Load pretrained image model ---------------------------------------------------------------
+wid <- 150
+ht <- 150
+
+
+# Resize  input using cubic interpolation [5]
+
+train_x <- resize(train_x_array, size_y = wid, size_z = ht, interpolation_type = 5) %>% as.array()
+test_x <- resize(test_x_array, size_y = wid, size_z = ht, interpolation_type = 5) %>% as.array()
+
+
+pred_list <- list()
+err_list <- list()
+
+fileNames <- list.files("output/", "kerasScra")
+
+for (n in seq_along (fileNames)) {
+
+  input_path <- file.path ("output", fileNames[n])
+  model <- load_model_hdf5(input_path)
+
+  pred_list[[n]] <- model %>% predict(test_x)
+
+}
+
+obs_list <- list()
+for (out in out_vars) {
+
+  for (oaxes in out_axes_vars) {
+
+    outnames <- paste0(out, "_", oaxes)
+
+    obs_list[[outnames]] <- test_y_array[,,out, oaxes]
+
+  }
+
+}
+
+for (n in seq_along (fileNames)) {
+
+  err_list[[n]] <- all_measures(obs_list[[n]], pred_list[[n]])
+
+}
+
+# Plot and get error
+
+varNames <- fileNames %>%
+  str_remove("kerasScra_") %>%
+  str_remove(".h5")
+
+names (obs_list) <- names (pred_list) <- varNames
+
+obs.df.mean <- obs_list %>%
+  map (get_meanSD, func = mean) %>%
+  bind_cols() %>%
+  mutate (cycle = 1:101) %>%
+  pivot_longer(cols = -c (cycle),
+               names_to = "var",
+               values_to = "Mean")
+
+obs.df.sd <- obs_list %>%
+  map (get_meanSD, func = sd) %>%
+  bind_cols() %>%
+  mutate (cycle = 1:101) %>%
+  pivot_longer(cols = -c (cycle),
+               names_to = "var",
+               values_to = "Sd")
+
+obs.df <- obs.df.mean %>%
+  inner_join(obs.df.sd, by = c("cycle", "var"))%>%
+  rename (obs_Mean = Mean,
+          obs_Sd = Sd)
+
+
+pred.df.mean <- pred_list %>%
+  map (get_meanSD, func = mean) %>%
+  bind_cols() %>%
+  mutate (cycle = 1:101) %>%
+  pivot_longer(cols = -c (cycle),
+               names_to = "var",
+               values_to = "Mean")
+
+pred.df.sd <- pred_list %>%
+  map (get_meanSD, func = mean) %>%
+  bind_cols() %>%
+  mutate (cycle = 1:101) %>%
+  pivot_longer(cols = -c (cycle),
+               names_to = "var",
+               values_to = "Sd")
+
+cnn.df <- pred.df.mean %>%
+  inner_join(pred.df.sd, by = c("cycle", "var")) %>%
+  inner_join(obs.df, by = c("cycle", "var")) %>%
+  mutate (method = "deep_scratch")
+
+
+cnn.err <- err_list %>%
+  map (~ map (., mean)) %>%
+  map (bind_cols) %>%
+  bind_rows(.id = "Outcomes") %>%
+  mutate_if(is.numeric, round, 2) %>%
+  mutate (`relRMSE(%)` = relRMSE * 100) %>%
+  select (Outcomes, RMSE, `relRMSE(%)`, cor) %>%
+  mutate (method = "deep_scratch")
+
+cnn.err$Outcomes <- c("Ankle Inv(+)/Eve(-)",
+                      "Ankle Df(+)/Pf(-)",
+                      "Ankle Add(+)/Abd(-)",
+                      "GRF AP",
+                      "GRF ML",
+                      "GRF VT",
+                      "Hip Add(+)/Abd(-)",
+                      "Hip F(+)/E(-)",
+                      "Hip IR(+)/ER(-)",
+                      "Knee Add(+)/Abd(-)",
+                      "Knee E(+)/F(-)",
+                      "Knee IR(+)/ER(-)")
+
+# Deep transfer -----------------------------------------------------------------
+
+###################### Import data ###########################################
+
+
+pred_list <- list()
+err_list <- list()
+
+fileNames <- list.files("output/", "kerasTL")
+
+for (n in seq_along (fileNames)) {
+
+  input_path <- file.path ("output", fileNames[n])
+  model <- load_model_hdf5(input_path)
+
+  pred_list[[n]] <- model %>% predict(test_x)
+
+}
+
+obs_list <- list()
+for (out in out_vars) {
+
+  for (oaxes in out_axes_vars) {
+
+    outnames <- paste0(out, "_", oaxes)
+
+    obs_list[[outnames]] <- test_y_array[,,out, oaxes]
+
+  }
+
+}
+
+for (n in seq_along (fileNames)) {
+
+  err_list[[n]] <- all_measures(obs_list[[n]], pred_list[[n]])
+
+}
+
+# Plot and get error
+
+varNames <- fileNames %>%
+  str_remove("kerasTL_") %>%
+  str_remove(".h5")
+
+names (obs_list) <- names (pred_list) <- varNames
+
+obs.df.mean <- obs_list %>%
+  map (get_meanSD, func = mean) %>%
+  bind_cols() %>%
+  mutate (cycle = 1:101) %>%
+  pivot_longer(cols = -c (cycle),
+               names_to = "var",
+               values_to = "Mean")
+
+obs.df.sd <- obs_list %>%
+  map (get_meanSD, func = sd) %>%
+  bind_cols() %>%
+  mutate (cycle = 1:101) %>%
+  pivot_longer(cols = -c (cycle),
+               names_to = "var",
+               values_to = "Sd")
+
+obs.df <- obs.df.mean %>%
+  inner_join(obs.df.sd, by = c("cycle", "var"))%>%
+  rename (obs_Mean = Mean,
+          obs_Sd = Sd)
+
+
+pred.df.mean <- pred_list %>%
+  map (get_meanSD, func = mean) %>%
+  bind_cols() %>%
+  mutate (cycle = 1:101) %>%
+  pivot_longer(cols = -c (cycle),
+               names_to = "var",
+               values_to = "Mean")
+
+pred.df.sd <- pred_list %>%
+  map (get_meanSD, func = mean) %>%
+  bind_cols() %>%
+  mutate (cycle = 1:101) %>%
+  pivot_longer(cols = -c (cycle),
+               names_to = "var",
+               values_to = "Sd")
+
+TL.df <- pred.df.mean %>%
+  inner_join(pred.df.sd, by = c("cycle", "var")) %>%
+  inner_join(obs.df, by = c("cycle", "var")) %>%
+  mutate (method = "deep_TL")
+
+
+TL.err <- err_list %>%
+  map (~ map (., mean)) %>%
+  map (bind_cols) %>%
+  bind_rows(.id = "Outcomes") %>%
+  mutate_if(is.numeric, round, 2) %>%
+  mutate (`relRMSE(%)` = relRMSE * 100) %>%
+  select (Outcomes, RMSE, `relRMSE(%)`, cor) %>%
+  mutate (method = "deep_TL")
+
+TL.err$Outcomes <-c("Ankle Inv(+)/Eve(-)",
+                    "Ankle Df(+)/Pf(-)",
+                    "Ankle Add(+)/Abd(-)",
+                    "GRF AP",
+                    "GRF ML",
+                    "GRF VT",
+                    "Hip Add(+)/Abd(-)",
+                    "Hip F(+)/E(-)",
+                    "Hip IR(+)/ER(-)",
+                    "Knee Add(+)/Abd(-)",
+                    "Knee E(+)/F(-)",
+                    "Knee IR(+)/ER(-)")
+
+df.plot <- bind_rows(pffr.df,
+                     cnn.df,
+                     TL.df) %>%
+  mutate (var = factor (var, levels = varLvls, labels = yNewNames),
+          Method = method) %>%
+  filter (!grepl ("GRF", var)) %>%
+  select (-method)
+
+err.df <- bind_rows(pffr.err,
+                    cnn.err,
+                    TL.err) %>%
+  mutate (Outcomes = factor (Outcomes, levels = yNewNames),
+          Method = factor (method, levels = c("pffr", "deep_scratch", "deep_TL"))) %>%
+  arrange (Outcomes, Method) %>%
+  filter (!grepl ("GRF", Outcomes)) %>%
+  select (Outcomes, Method,  everything(), -method)
+
+saveRDS(list (df.plot = df.plot,
+              err.df = err.df),
+        "output/prediction_results.RDS")
+
+```
+
+## Plots
+
+```{r, include = FALSE}
+
+results <- readRDS("output/prediction_results.RDS")
+```
+
+
+```{r fig.height=15, fig.width=12}
+df.plot <- results$df.plot
+
+temp1 <- df.plot %>%
+  select (cycle, var, obs_Mean, obs_Sd) %>%
+  rename (Mean = obs_Mean,
+          Sd = obs_Sd) %>%
+  mutate (Method = "obs")
+
+df.plot <- df.plot %>%
+  select (!matches ("obs")) %>%
+  bind_rows(temp1) %>%
+  mutate (Method = factor (Method, levels = c("obs", "pffr", "deep_scratch", "deep_TL")))
+
+
+p <- ggplot (df.plot) +
+  geom_line(aes(x = cycle, y = Mean, colour = Method), size = 1) +
+   #geom_ribbon(aes(x = cycle, ymin = Mean - Sd, ymax = Mean + Sd, fill = method), alpha = 0.1) +
+  facet_wrap(~ var, scales = "free", ncol = 3) +
+  scale_color_manual(values = c("black", "red", "blue", "green")) +
+  scale_fill_manual(values = c("black", "red", "blue", "green")) +
+  guides(fill = "none") +
+  ylab ("Joint moment (Nm/kg)") +
+  xlab ("Stance phase (100%)") +
+  theme_cowplot() +
+  theme (text = element_text(size=16))
+
+p
+```
+
+## Table
+
+```{r}
+
+err.df <- results$err.df
+
+err.df %>%
+  kableExtra::kable() %>%
+  kableExtra::kable_styling ()
+```
+
+```{r, eval = FALSE, include = FALSE}
+my_path <- paste0("manuscript/table2",
+                  "perf",
+                  ".docx")
+
+
+ft <- flextable(err.df) %>%
+  set_caption(caption = "Table 2. Prediction performance") %>%
+  autofit()
+
+my_doc <- read_docx()  %>%
+  body_add_flextable(ft)
+
+print (my_doc, target = my_path)
+```
+
+
