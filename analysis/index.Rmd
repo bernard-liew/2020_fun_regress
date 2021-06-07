@@ -10,4 +10,4 @@ editor_options:
 
 Welcome to my research website.
 
-[This code performs BN analysis ](code_for_publish.html)
+[This code performs the ML techniques](code_for_publish.html)

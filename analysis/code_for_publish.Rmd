@@ -859,8 +859,9 @@ p <- ggplot (df.plot) +
   geom_line(aes(x = cycle, y = Mean, colour = Method), size = 1) +
    #geom_ribbon(aes(x = cycle, ymin = Mean - Sd, ymax = Mean + Sd, fill = method), alpha = 0.1) +
   facet_wrap(~ var, scales = "free", ncol = 3) +
-  scale_color_manual(values = c("black", "red", "blue", "green")) +
-  scale_fill_manual(values = c("black", "red", "blue", "green")) +
+  scale_color_manual(values = c("black", "red", "blue", "green"), 
+                     label = c("Observed", bquote(ML[fregress]), bquote(ML[DNN]), bquote(ML[TL]))) +
+  #scale_fill_manual(values = c("black", "red", "blue", "green")) +
   guides(fill = "none") +
   ylab ("Joint moment (Nm/kg)") +
   xlab ("Stance phase (100%)") +
@@ -869,6 +870,31 @@ p <- ggplot (df.plot) +
 
 p
 ```
+
+```{r, eval = FALSE, include = FALSE}
+p <- ggplot (df.plot) +
+  geom_line(aes(x = cycle, y = Mean, colour = Method), size = 1) +
+   #geom_ribbon(aes(x = cycle, ymin = Mean - Sd, ymax = Mean + Sd, fill = method), alpha = 0.1) +
+  facet_wrap(~ var, scales = "free", ncol = 3) +
+  scale_color_manual(values = c("black", "red", "blue", "green"), 
+                     label = c("Observed", bquote(ML[fregress]), bquote(ML[DNN]), bquote(ML[TL]))) +
+  #scale_fill_manual(values = c("black", "red", "blue", "green")) +
+  guides(fill = "none") +
+  ylab ("Joint moment (Nm/kg)") +
+  xlab ("Stance phase (100%)") +
+  theme_cowplot() +
+  theme (text = element_text(size=10),
+         axis.text = element_text(size=8),
+         plot.margin=grid::unit(c(0,0,0,0), "mm"))
+
+
+ggsave("manuscript/temp.tiff", width = 9, height = 5, units = "in", device='tiff', dpi=300)
+
+tiff("manuscript/fig1.tiff", units="in", width=9, height=5, res=300)
+p
+dev.off()
+```
+
 
 ## Table
 
